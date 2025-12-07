@@ -35,18 +35,26 @@
         .bg-soft-danger { background-color: rgba(220, 53, 69, 0.1); color: #dc3545; }
         .bg-soft-warning { background-color: rgba(255, 193, 7, 0.1); color: #ffc107; }
 
-        /* Print Styles */
+        /* Print Styles - FIXED */
         #printable-container { display: none; }
         @media print {
             body > * { display: none !important; }
             .modal, .modal-backdrop { display: none !important; }
-            #printable-container { display: block !important; position: absolute; left: 0; top: 0; width: 100%; background: white; color: #000; padding: 20px; }
-            .print-header { border-bottom: 2px solid #000; margin-bottom: 15px; padding-bottom: 10px; }
-            .print-header h1 { font-size: 26px; font-weight: 800; margin: 0; text-transform: uppercase; }
-            .print-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 12px; }
-            .print-table th { border-bottom: 2px solid #000; text-align: left; padding: 6px; font-weight: bold; }
-            .print-table td { border-bottom: 1px solid #ccc; padding: 6px; }
-            .print-footer { margin-top: 30px; text-align: center; font-size: 10px; font-style: italic; }
+            #printable-container { display: block !important; position: absolute; left: 0; top: 0; width: 100%; background: white; color: #000; padding: 25px; }
+            
+            .print-header { border-bottom: 2px solid #333; margin-bottom: 20px; padding-bottom: 15px; }
+            .print-header h1 { font-size: 28px; font-weight: 800; margin: 0; text-transform: uppercase; color: #000; }
+            .print-header p { margin: 2px 0; font-size: 14px; color: #333; }
+            
+            .invoice-meta { display: flex; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+            .invoice-meta .box { width: 48%; }
+            .invoice-meta h4 { font-size: 14px; font-weight: bold; text-transform: uppercase; color: #555; border-bottom: 1px solid #ddd; margin-bottom: 5px; }
+            
+            .print-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 12px; }
+            .print-table th { border-bottom: 2px solid #000; text-align: left; padding: 8px 5px; font-weight: bold; text-transform: uppercase; }
+            .print-table td { border-bottom: 1px solid #ddd; padding: 6px 5px; }
+            
+            .print-footer { margin-top: 40px; padding-top: 10px; border-top: 1px dashed #999; text-align: center; font-size: 11px; font-style: italic; color: #333; }
         }
 
         #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 9999; display: none; justify-content: center; align-items: center; flex-direction: column; }
@@ -265,7 +273,7 @@ onAuthStateChanged(auth, (user) => {
     currentUser = user;
     if (user) {
         document.getElementById('auth-section').classList.add('d-none'); document.getElementById('app-section').classList.remove('d-none');
-        document.getElementById('user-email-display').innerText = user.email; // SHOW EMAIL
+        document.getElementById('user-email-display').innerText = user.email; 
         triggerDashboardLoad(); loadSettings(); loadInventory();
     } else {
         document.getElementById('auth-section').classList.remove('d-none'); document.getElementById('app-section').classList.add('d-none');
@@ -448,12 +456,93 @@ async function loadExpenses() {
     </tr>`);
 }
 
+// --- UPDATED PRINT VIEW ---
 window.printView = async (id) => {
     const d=(await getDoc(doc(db,"invoices",id))).data();
     const s=(await getDoc(doc(db,"settings","config"))).data()||{name:"Zimam Pharma"};
-    let r='', t=0; d.items.forEach(i=>{t+=i.qty*i.sellingRate; r+=`<tr><td>${i.item}</td><td>${i.qty}</td><td>${i.sellingRate}</td><td>${(i.qty*i.sellingRate).toFixed(2)}</td></tr>`;});
-    document.getElementById('preview-area').innerHTML=`<div class="p-3 border"><h3>${s.name}</h3><p>${s.address||''}</p><hr><h5>Bill To: ${d.shop}</h5><table class="table table-sm"><thead><tr><th>Item</th><th>Qty</th><th>Rate</th><th>Total</th></tr></thead><tbody>${r}</tbody></table><h4 class="text-end">Total: ${t.toFixed(2)}</h4></div>`;
-    document.getElementById('printable-container').innerHTML=document.getElementById('preview-area').innerHTML;
+    let r='', t=0; 
+    
+    // Robust date handling
+    let dateStr = "N/A";
+    if (d.finalizedAt) {
+        dateStr = d.finalizedAt.toDate ? d.finalizedAt.toDate().toLocaleDateString() : new Date(d.finalizedAt).toLocaleDateString();
+    }
+    
+    // Robust invoice num
+    let invNum = d.invoiceNum || "INV-GEN-" + id.substr(0,6).toUpperCase();
+
+    d.items.forEach(i=>{
+        let rowTot = (i.qty*i.sellingRate);
+        t+=rowTot; 
+        r+=`<tr>
+            <td>${i.item}</td>
+            <td style="text-align:center">${i.qty}</td>
+            <td style="text-align:right">${i.sellingRate.toFixed(2)}</td>
+            <td style="text-align:right">${rowTot.toFixed(2)}</td>
+        </tr>`;
+    });
+    
+    const paid = d.paidAmount || 0;
+    const due = t - paid;
+
+    document.getElementById('preview-area').innerHTML=`
+    <div class="p-3">
+        <h3>${s.name}</h3>
+        <p>${s.address||''} | ${s.phone||''}</p>
+        <hr>
+        <div class="d-flex justify-content-between mb-3">
+            <div><strong>Bill To:</strong><br>${d.shop}</div>
+            <div class="text-end"><strong>Inv #:</strong> ${invNum}<br><strong>Date:</strong> ${dateStr}</div>
+        </div>
+        <table class="table table-sm table-bordered">
+            <thead><tr class="table-light"><th>Item</th><th class="text-center">Qty</th><th class="text-end">Rate</th><th class="text-end">Total</th></tr></thead>
+            <tbody>${r}</tbody>
+        </table>
+        <div class="row">
+            <div class="col-6"></div>
+            <div class="col-6">
+                <table class="table table-sm">
+                    <tr><td>Total Amount:</td><td class="text-end fw-bold">${t.toFixed(2)}</td></tr>
+                    <tr><td>Paid:</td><td class="text-end text-success">${paid.toFixed(2)}</td></tr>
+                    <tr><td style="border-top:2px solid #000">Due:</td><td style="border-top:2px solid #000" class="text-end text-danger fw-bold">${due.toFixed(2)}</td></tr>
+                </table>
+            </div>
+        </div>
+        <div class="mt-4 text-center text-muted fst-italic small">${s.footer||''}</div>
+    </div>`;
+    
+    // Prepare Printable Version
+    document.getElementById('printable-container').innerHTML = `
+        <div class="print-header">
+            <h1>${s.name}</h1>
+            <p>${s.address||''} | ${s.phone||''}</p>
+        </div>
+        <div class="invoice-meta">
+            <div class="box">
+                <h4>Bill To</h4>
+                <p style="font-size:16px; font-weight:bold">${d.shop}</p>
+            </div>
+            <div class="box" style="text-align:right">
+                <h4>Invoice Details</h4>
+                <p><strong>#:</strong> ${invNum}</p>
+                <p><strong>Date:</strong> ${dateStr}</p>
+            </div>
+        </div>
+        <table class="print-table">
+            <thead><tr><th style="width:50%">Item</th><th style="text-align:center">Qty</th><th style="text-align:right">Rate</th><th style="text-align:right">Amount</th></tr></thead>
+            <tbody>${r.replace(/td/g, 'td style="border-bottom:1px solid #ddd"')}</tbody>
+        </table>
+        <div style="text-align:right; margin-top:20px">
+            <table style="width:40%; float:right; font-size:14px">
+                <tr><td>Total:</td><td style="font-weight:bold; text-align:right">${t.toFixed(2)}</td></tr>
+                <tr><td>Paid:</td><td style="text-align:right">${paid.toFixed(2)}</td></tr>
+                <tr><td style="border-top:2px solid #000; padding-top:5px"><strong>Due:</strong></td><td style="border-top:2px solid #000; padding-top:5px; font-weight:bold; text-align:right">${due.toFixed(2)}</td></tr>
+            </table>
+            <div style="clear:both"></div>
+        </div>
+        <div class="print-footer">${s.footer||''}</div>
+    `;
+    
     new bootstrap.Modal(document.getElementById('printModal')).show();
 };
 
