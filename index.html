@@ -3,1118 +3,519 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BDT Invoice Manager</title>
-    <!-- Load Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Zimam Pharma - Supply Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        /* Custom styles */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f7f7f7;
-            padding: 0;
-            margin: 0;
-        }
-        .main-layout {
-            min-height: 100vh;
-            max-width: 1200px;
-            margin: 0 auto;
-            background-color: white;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-        .item-input {
-            width: 100%;
-            padding: 4px 8px; 
-            border: 1px solid #e5e7eb;
-            border-radius: 4px;
-            transition: all 0.15s ease;
-        }
-        .item-input:focus {
-            outline: none;
-            border-color: #3b82f6; 
-            box-shadow: 0 0 0 1px #3b82f6;
-        }
-        /* Calculated field styling */
-        .total-input-cell input {
-            background-color: #f9fafb;
-            pointer-events: none;
-        }
+        :root { --primary-bg: #f8f9fa; --sidebar-bg: #212529; --accent-color: #0d6efd; }
+        body { background-color: var(--primary-bg); font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
         
-        /* Hide number input spin buttons */
-        input[type=number]::-webkit-inner-spin-button, 
-        input[type=number]::-webkit-outer-spin-button { 
-            -webkit-appearance: none; 
-            margin: 0; 
-        }
-        input[type=number] {
-            -moz-appearance: textfield;
+        /* Sidebar */
+        .sidebar { min-height: 100vh; background: var(--sidebar-bg); color: #babbbc; transition: all 0.3s; }
+        .sidebar .nav-link { color: #babbbc; padding: 15px 20px; font-weight: 500; border-left: 4px solid transparent; cursor: pointer; }
+        .sidebar .nav-link:hover { color: #fff; background: rgba(255,255,255,0.05); }
+        .sidebar .nav-link.active { color: #fff; background: rgba(13, 110, 253, 0.1); border-left-color: var(--accent-color); }
+        .sidebar i { width: 25px; text-align: center; margin-right: 10px; }
+
+        /* Dashboard Cards */
+        .card { border: none; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); background: #fff; }
+        .stat-card { padding: 25px; position: relative; overflow: hidden; }
+        .stat-card .icon-box { width: 50px; height: 50px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 15px; }
+        .stat-card h3 { font-size: 28px; font-weight: 700; margin-bottom: 5px; color: #333; }
+        .stat-card p { margin: 0; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #777; }
+        
+        /* User Bar */
+        .user-bar { background: white; padding: 10px 20px; border-bottom: 1px solid #e9ecef; display: flex; justify-content: flex-end; align-items: center; margin-bottom: 20px; border-radius: 0 0 10px 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .user-badge { background: #eef2f7; padding: 5px 15px; border-radius: 20px; color: #555; font-size: 0.9rem; font-weight: 600; }
+
+        /* Colors */
+        .bg-soft-primary { background-color: rgba(13, 110, 253, 0.1); color: #0d6efd; }
+        .bg-soft-success { background-color: rgba(25, 135, 84, 0.1); color: #198754; }
+        .bg-soft-danger { background-color: rgba(220, 53, 69, 0.1); color: #dc3545; }
+        .bg-soft-warning { background-color: rgba(255, 193, 7, 0.1); color: #ffc107; }
+
+        /* Print Styles */
+        #printable-container { display: none; }
+        @media print {
+            body > * { display: none !important; }
+            .modal, .modal-backdrop { display: none !important; }
+            #printable-container { display: block !important; position: absolute; left: 0; top: 0; width: 100%; background: white; color: #000; padding: 20px; }
+            .print-header { border-bottom: 2px solid #000; margin-bottom: 15px; padding-bottom: 10px; }
+            .print-header h1 { font-size: 26px; font-weight: 800; margin: 0; text-transform: uppercase; }
+            .print-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 12px; }
+            .print-table th { border-bottom: 2px solid #000; text-align: left; padding: 6px; font-weight: bold; }
+            .print-table td { border-bottom: 1px solid #ccc; padding: 6px; }
+            .print-footer { margin-top: 30px; text-align: center; font-size: 10px; font-style: italic; }
         }
 
-        /* Print styles - CORRECTED */
-        @media print {
-            /* Hide all UI elements, navigation, and the interactive app container */
-            .no-print, .auth-screen, #appContainer, .view-section {
-                display: none !important;
-            }
-            /* Do NOT hide .main-layout, it needs to be visible to hold #printArea */
-            
-            /* Make the dedicated print area visible and full-width */
-            #printArea { 
-                display: block !important; 
-                padding: 0;
-                width: 100%;
-                margin: 0;
-                box-shadow: none;
-            }
-            /* Ensure the print content area uses full space */
-            .invoice-page {
-                 padding: 20px !important; 
-                 display: block !important;
-            }
-            .print-table th, .print-table td {
-                padding: 8px 12px;
-            }
-        }
-        
-        /* Ensure #printArea is completely hidden when not printing */
-        #printArea {
-            display: none;
-        }
+        #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 9999; display: none; justify-content: center; align-items: center; flex-direction: column; }
     </style>
 </head>
 <body>
 
-    <div class="main-layout">
-        
-        <!-- LOGIN SECTION (Visible by default until authenticated) -->
-        <section id="loginSection" class="auth-screen flex items-center justify-center min-h-screen p-4">
-            <div class="w-full max-w-sm bg-white p-8 rounded-xl shadow-2xl border border-gray-100">
-                <h2 class="text-3xl font-bold mb-6 text-gray-800 text-center">Invoice Manager Login</h2>
-                <p class="text-sm text-gray-500 mb-6 text-center">Use your pre-registered email and password to access the system. No public signup available.</p>
-                <div id="loginError" class="hidden p-3 mb-4 text-sm text-red-700 bg-red-100 rounded-lg" role="alert"></div>
-                <form id="loginForm" onsubmit="handleLogin(event)">
+<div id="loader">
+    <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;"></div>
+    <h5 class="mt-3 text-muted">Zimam Pharma...</h5>
+</div>
+
+<div id="printable-container"></div>
+
+<div id="auth-section" class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-4">
+            <div class="card p-5 mt-5 text-center">
+                <i class="fas fa-clinic-medical fa-4x text-primary mb-3"></i>
+                <h3>Zimam Pharma</h3>
+                <p class="text-muted">Admin Login</p>
+                <form id="login-form" class="text-start">
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" id="login-email" class="form-control" required>
+                    </div>
                     <div class="mb-4">
-                        <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-                        <input type="email" id="email" class="item-input" required placeholder="name@example.com">
+                        <label class="form-label">Password</label>
+                        <input type="password" id="login-password" class="form-control" required>
                     </div>
-                    <div class="mb-6">
-                        <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                        <input type="password" id="password" class="item-input" required placeholder="••••••••">
+                    <button type="submit" class="btn btn-primary w-100 fw-bold">Login</button>
+                    
+                    <div class="text-center mt-4">
+                        <small class="text-muted" style="font-size: 0.8rem;">Developed By <strong>Foyaz Chowdhury</strong></small>
                     </div>
-                    <button type="submit" id="loginButton" class="w-full px-4 py-3 bg-blue-600 text-white font-bold rounded-lg shadow-md hover:bg-blue-700 transition duration-150">
-                        Login
-                    </button>
                 </form>
             </div>
-        </section>
+        </div>
+    </div>
+</div>
 
-        <!-- MAIN APPLICATION CONTENT (Hidden until authenticated) -->
-        <div id="appContainer" class="hidden p-4 sm:p-8">
-            <!-- NAVIGATION BAR (no-print) -->
-            <nav class="no-print mb-6 border-b pb-4 flex flex-wrap gap-2 justify-between items-center">
-                <div class="flex flex-wrap gap-2">
-                    <button onclick="setView('createInvoice')" id="nav-createInvoice" class="px-4 py-2 text-sm font-medium rounded-lg bg-blue-600 text-white shadow-md hover:bg-blue-700 transition duration-150">Create New Invoice</button>
-                    <button onclick="setView('invoicesList')" id="nav-invoicesList" class="px-4 py-2 text-sm font-medium rounded-lg bg-gray-200 text-gray-800 hover:bg-gray-300">View Saved Invoices</button>
-                    <button onclick="setView('itemsList')" id="nav-itemsList" class="px-4 py-2 text-sm font-medium rounded-lg bg-gray-200 text-gray-800 hover:bg-gray-300">Manage Item Inventory</button>
-                    <button onclick="setView('dataManagement')" id="nav-dataManagement" class="px-4 py-2 text-sm font-medium rounded-lg bg-gray-200 text-gray-800 hover:bg-gray-300">Data Backup/Restore</button>
+<div id="app-section" class="container-fluid d-none">
+    <div class="row">
+        <div class="col-md-2 sidebar p-0 d-print-none">
+            <div class="p-4 border-bottom border-secondary">
+                <h5 class="mb-0 text-white"><i class="fas fa-pills me-2"></i>Zimam Pharma</h5>
+            </div>
+            <ul class="nav flex-column mt-3">
+                <li class="nav-item"><a class="nav-link active" onclick="showTab('dashboard')"><i class="fas fa-th-large"></i> Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="showTab('new-invoice')"><i class="fas fa-file-invoice-dollar"></i> New Invoice</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="showTab('inventory')"><i class="fas fa-boxes"></i> Inventory</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="showTab('saved-invoices')"><i class="fas fa-history"></i> Saved Invoices</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="showTab('expenses')"><i class="fas fa-wallet"></i> Expenses</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="showTab('statement')"><i class="fas fa-chart-line"></i> Statement</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="showTab('settings')"><i class="fas fa-cog"></i> Settings</a></li>
+                <li class="nav-item mt-5"><a class="nav-link text-danger" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            </ul>
+        </div>
+
+        <div class="col-md-10" style="height: 100vh; overflow-y: auto; background-color: #f4f6f9;">
+            
+            <div class="user-bar">
+                <div class="user-badge">
+                    <i class="fas fa-user-circle me-2 text-primary"></i>
+                    Logged in as: <span id="user-email-display">...</span>
                 </div>
-                <button onclick="handleLogout()" class="px-3 py-1 text-sm font-medium rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition">Logout</button>
-            </nav>
+            </div>
 
-            <!-- 1. INVOICE CREATION SECTION -->
-            <section id="createInvoiceSection" class="view-section invoice-page">
-                <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">New Invoice</h2>
-                
-                <!-- INVOICE HEADER SECTION -->
-                <header class="mb-6 pb-4 border-b border-gray-300">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end">
-                        <!-- Organization Details -->
-                        <div class="w-full sm:w-1/2 mb-4 sm:mb-0">
-                            <h1 class="text-3xl font-bold text-gray-800 mb-2">INVOICE</h1>
-                            <input type="text" id="orgName" value="Your Organization Name" class="item-input text-xl font-semibold mb-1" placeholder="Organization Name">
-                            <input type="text" id="orgAddress" value="123 Business Blvd, City, Country" class="item-input text-sm text-gray-600" placeholder="Address">
-                        </div>
-                        
-                        <!-- Invoice Metadata -->
-                        <div class="w-full sm:w-1/2 text-left sm:text-right">
-                            <div class="flex justify-between sm:justify-end mb-1">
-                                <label for="receiptNo" class="text-gray-500 font-medium sm:w-32">Invoice No:</label>
-                                <span id="receiptNo" class="font-semibold text-gray-800 w-full sm:w-40 text-left sm:text-right"></span>
-                            </div>
-                            <div class="flex justify-between sm:justify-end">
-                                <label for="invoiceDate" class="text-gray-500 font-medium sm:w-32">Date:</label>
-                                <span id="invoiceDate" class="font-semibold text-gray-800 w-full sm:w-40 text-left sm:text-right"></span>
-                            </div>
-                        </div>
+            <div class="p-4">
+                <div id="dashboard" class="content-tab">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h3>Dashboard Overview</h3>
+                        <button class="btn btn-outline-dark" onclick="triggerDashboardLoad()"><i class="fas fa-sync-alt"></i> Refresh</button>
                     </div>
-                </header>
-
-                <!-- INVOICE BODY (ITEMS TABLE) -->
-                <main>
-                    <!-- Datalist for Item Names (Global, used by all input fields) -->
-                    <datalist id="item-names"></datalist>
-                    
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead>
-                            <tr class="bg-gray-50">
-                                <th class="px-4 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/12">SL No</th>
-                                <th class="px-4 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-4/12">Item Description</th>
-                                <th class="px-4 py-1 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-2/12">Quantity</th>
-                                <th class="px-4 py-1 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-2/12">Rate (BDT)</th>
-                                <th class="px-4 py-1 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-2/12">Total Amount</th>
-                                <th class="px-2 py-1 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-1/12 no-print"></th>
-                            </tr>
-                        </thead>
-                        <tbody id="invoiceTableBody" class="bg-white divide-y divide-gray-200">
-                            <!-- Dynamic rows will be inserted here -->
-                        </tbody>
-                    </table>
-
-                    <!-- Add/Save Buttons -->
-                    <div class="mt-4 no-print flex justify-between items-center">
-                        <button onclick="addRow()" class="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg shadow-md hover:bg-blue-700 transition duration-150">
-                            + Add New Item
-                        </button>
-                        <button onclick="saveInvoice()" class="px-6 py-3 bg-green-600 text-white font-bold text-lg rounded-xl shadow-lg hover:bg-green-700 transition duration-150">
-                            Save Invoice
-                        </button>
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-3"><div class="card stat-card"><div class="icon-box bg-soft-primary"><i class="fas fa-coins"></i></div><h3 id="dash-revenue">0.00</h3><p>Revenue</p></div></div>
+                        <div class="col-md-3"><div class="card stat-card"><div class="icon-box bg-soft-success"><i class="fas fa-chart-line"></i></div><h3 id="dash-net-profit">0.00</h3><p>Net Profit</p></div></div>
+                        <div class="col-md-3"><div class="card stat-card"><div class="icon-box bg-soft-danger"><i class="fas fa-hand-holding-usd"></i></div><h3 id="dash-due">0.00</h3><p>Total Due</p></div></div>
+                        <div class="col-md-3"><div class="card stat-card"><div class="icon-box bg-soft-warning"><i class="fas fa-wallet"></i></div><h3 id="dash-expense">0.00</h3><p>Expenses</p></div></div>
                     </div>
-                </main>
-
-                <!-- INVOICE FOOTER (TOTALS) -->
-                <footer class="mt-8 pt-4 border-t border-gray-300">
-                    <div class="flex justify-end">
-                        <div class="w-full sm:w-1/3">
-                            <div class="flex justify-between items-center py-2">
-                                <span class="text-lg font-medium text-gray-700">TOTAL PAYABLE AMOUNT:</span>
-                                <span id="totalPayableAmount" class="text-2xl font-bold text-gray-800">৳0.00</span>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="card p-4">
+                                <h5>Financial Breakdown</h5><hr>
+                                <table class="table table-borderless">
+                                    <tr><td>Total Sales</td><td class="text-end fw-bold" id="logic-sales">0.00</td></tr>
+                                    <tr><td>- Cost of Goods</td><td class="text-end text-muted" id="logic-cogs">0.00</td></tr>
+                                    <tr class="border-top"><td>= Gross Profit</td><td class="text-end fw-bold text-primary" id="logic-gross">0.00</td></tr>
+                                    <tr><td>- Expenses</td><td class="text-end text-danger" id="logic-exp">0.00</td></tr>
+                                    <tr class="border-top border-2"><td>= NET PROFIT</td><td class="text-end fw-bold text-success fs-5" id="logic-net">0.00</td></tr>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card p-4 bg-primary text-white text-center">
+                                <i class="fas fa-server fa-3x mb-3"></i>
+                                <h4>System Status</h4>
+                                <div class="text-start mt-3 p-2 bg-dark bg-opacity-25 rounded" style="font-size:0.9rem">
+                                    <p class="mb-1">Invoices Scanned: <strong id="debug-inv-count">0</strong></p>
+                                    <p class="mb-1">Expenses Scanned: <strong id="debug-exp-count">0</strong></p>
+                                    <p class="mb-0">Status: <strong id="debug-status" class="text-success">Checking...</strong></p>
+                                </div>
+                                <button class="btn btn-light text-primary fw-bold mt-3 w-100" onclick="backupData()">Download Backup</button>
                             </div>
                         </div>
                     </div>
-                    <div class="no-print text-center mt-6">
-                        <button onclick="window.print()" class="px-6 py-3 bg-indigo-500 text-white font-bold text-lg rounded-xl shadow-lg hover:bg-indigo-600 transition duration-150">
-                            Print/Save as PDF (Current View)
-                        </button>
-                    </div>
-                </footer>
-            </section>
-            
-            <!-- 2. INVOICES LIST SECTION -->
-            <section id="invoicesListSection" class="view-section hidden">
-                <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-2 flex justify-between items-center">
-                    Saved Invoices
-                </h2>
-                <div id="invoicesListContainer" class="space-y-4">
-                    <p class="text-gray-500" id="noInvoicesMessage">Loading invoices...</p>
-                    <!-- Saved invoices cards will be populated here -->
-                </div>
-            </section>
-
-            <!-- 3. ITEM INVENTORY SECTION -->
-            <section id="itemsListSection" class="view-section hidden">
-                <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">Item Inventory Management</h2>
-                
-                <!-- Item Form -->
-                <div class="p-4 border rounded-lg mb-6 bg-gray-50">
-                    <h3 class="text-xl font-semibold mb-3">Add New Item</h3>
-                    <div class="flex flex-col sm:flex-row gap-4">
-                        <input type="text" id="newItemName" class="item-input flex-1" placeholder="Item Name (e.g., Web Design Service)" required>
-                        <input type="number" step="0.01" min="0" id="newItemRate" class="item-input w-full sm:w-32 text-right" placeholder="Rate (BDT)" required>
-                        <button onclick="saveItem()" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">Save Item</button>
-                    </div>
                 </div>
 
-                <!-- Item List -->
-                <h3 class="text-xl font-semibold mb-3">Current Inventory</h3>
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead>
-                        <tr class="bg-gray-50">
-                            <th class="px-4 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-2/3">Item Name</th>
-                            <th class="px-4 py-1 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">Rate (BDT)</th>
-                            <th class="px-4 py-1 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="itemsTableBody" class="bg-white divide-y divide-gray-200">
-                        <tr id="noItemsRow"><td colspan="3" class="p-4 text-center text-gray-500">No items added yet.</td></tr>
-                        <!-- Items will be populated here -->
-                    </tbody>
-                </table>
-            </section>
-            
-            <!-- 4. DATA MANAGEMENT SECTION -->
-            <section id="dataManagementSection" class="view-section hidden">
-                <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">Data Backup and Restore</h2>
-                
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <!-- Backup/Export Card -->
-                    <div class="p-6 border border-blue-200 rounded-xl shadow-lg bg-blue-50">
-                        <h3 class="text-xl font-semibold mb-4 text-gray-800 flex items-center">
-                            <svg class="h-6 w-6 mr-2 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                            Export Data (Backup)
-                        </h3>
-                        <p class="text-gray-600 mb-6">Export all your inventory items and saved invoices into a single downloadable JSON file. This is crucial for backing up your data.</p>
-                        <button onclick="exportData()" class="w-full px-4 py-3 bg-blue-600 text-white font-bold rounded-lg shadow-md hover:bg-blue-700 transition duration-150">
-                            Download Backup (.json)
-                        </button>
+                <div id="new-invoice" class="content-tab d-none">
+                    <h3>New Invoice</h3><hr>
+                    <div class="card p-4">
+                        <div class="row mb-3"><div class="col-12"><input type="text" id="inv-shop" class="form-control" placeholder="Shop Name"></div></div>
+                        <div class="row bg-light p-3 rounded align-items-end g-2">
+                            <div class="col-md-4">
+                                <input type="text" id="inv-item" class="form-control" placeholder="Item Name">
+                                <select id="inv-item-helper" class="form-select mt-1" onchange="document.getElementById('inv-item').value=this.value"><option selected disabled>Select from Inventory</option></select>
+                            </div>
+                            <div class="col-md-2"><input type="number" id="inv-qty" class="form-control" placeholder="Qty"></div>
+                            <div class="col-md-3"><input type="number" step="0.01" id="inv-buy-rate" class="form-control" placeholder="Buy Rate"></div>
+                            <div class="col-md-3"><button class="btn btn-secondary w-100" onclick="addItemToDraft()">Add Item</button></div>
+                        </div>
+                        <div class="table-responsive mt-4"><table class="table table-bordered"><thead class="table-light"><tr><th>Item</th><th>Qty</th><th>Buy</th><th>Subtotal</th><th>Action</th></tr></thead><tbody id="temp-invoice-body"></tbody></table></div>
+                        <div class="text-end mt-2"><button class="btn btn-primary" onclick="saveDraftInvoice()">Save Draft</button></div>
                     </div>
+                    <h4 class="mt-5">Drafts</h4>
+                    <div class="table-responsive"><table class="table table-hover bg-white shadow-sm"><thead class="table-dark"><tr><th>Date</th><th>Shop</th><th>Items</th><th>Action</th></tr></thead><tbody id="drafts-table-body"></tbody></table></div>
+                </div>
 
-                    <!-- Import/Restore Card -->
-                    <div class="p-6 border border-green-200 rounded-xl shadow-lg bg-green-50">
-                        <h3 class="text-xl font-semibold mb-4 text-gray-800 flex items-center">
-                            <svg class="h-6 w-6 mr-2 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 9V5a2 2 0 00-2-2m-2 10h4m-4 4h4m-5 0h8a2 2 0 002-2V5a2 2 0 00-2-2H9a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-                            Import Data (Restore)
-                        </h3>
-                        <p class="text-red-700 mb-4 font-semibold p-2 bg-white rounded-md border border-red-300">WARNING: Importing data will OVERWRITE ALL your existing invoices and inventory items.</p>
-                        <input type="file" id="importFile" accept=".json" class="hidden" onchange="handleImport(event)">
-                        <button onclick="document.getElementById('importFile').click()" class="w-full px-4 py-3 bg-green-600 text-white font-bold rounded-lg shadow-md hover:bg-green-700 transition duration-150">
-                            Upload Backup (.json)
-                        </button>
+                <div id="inventory" class="content-tab d-none">
+                    <h3>Inventory</h3><hr>
+                    <div class="card p-3 bg-light mb-4">
+                        <div class="row g-2 align-items-end"><div class="col-9"><input type="text" id="manual-inv-name" class="form-control" placeholder="New Medicine Name"></div><div class="col-3"><button onclick="addManualInventory()" class="btn btn-success w-100">Add</button></div></div>
+                    </div>
+                    <input type="text" id="inventory-search" onkeyup="filterInventory()" class="form-control mb-3" placeholder="Search...">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover bg-white">
+                            <thead class="table-dark"><tr><th>Item Name</th><th>Status</th><th>Action</th></tr></thead>
+                            <tbody id="inventory-table-body"></tbody>
+                        </table>
                     </div>
                 </div>
-            </section>
-            
-            <!-- Loading Indicator -->
-            <div id="loadingIndicator" class="fixed inset-0 bg-white bg-opacity-75 flex items-center justify-center hidden">
-                <div class="p-4 bg-blue-100 border border-blue-400 text-blue-700 rounded-lg shadow-xl">
-                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-blue-500 inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Processing Data...
+
+                <div id="saved-invoices" class="content-tab d-none">
+                    <h3>Saved Invoices</h3><hr>
+                    <input type="text" id="search-invoice" class="form-control mb-3" placeholder="Search..." onkeyup="filterSavedInvoices()">
+                    <div class="table-responsive"><table class="table table-striped bg-white shadow-sm align-middle"><thead class="table-dark"><tr><th>Inv #</th><th>Date</th><th>Shop</th><th>Total</th><th class="text-success">Paid</th><th class="text-danger">Due</th><th>Action</th></tr></thead><tbody id="saved-invoices-body"></tbody></table></div>
+                </div>
+
+                <div id="expenses" class="content-tab d-none">
+                    <h3>Expenses</h3><hr>
+                    <div class="card p-3 mb-4">
+                        <div class="row g-3">
+                            <div class="col-md-6"><input type="text" id="exp-desc" class="form-control" placeholder="Description"></div>
+                            <div class="col-md-4"><input type="number" id="exp-amount" class="form-control" placeholder="Amount"></div>
+                            <div class="col-md-2"><button type="button" onclick="window.saveExpense()" class="btn btn-danger w-100">Add</button></div>
+                        </div>
+                    </div>
+                    <table class="table bg-white"><tbody id="expense-list"></tbody></table>
+                </div>
+
+                <div id="statement" class="content-tab d-none">
+                    <h3>Statement</h3><hr>
+                    <div class="card p-3 mb-4"><div class="row g-3 align-items-end"><div class="col-md-4"><label>Start</label><input type="date" id="st-start" class="form-control"></div><div class="col-md-4"><label>End</label><input type="date" id="st-end" class="form-control"></div><div class="col-md-4"><button onclick="generateStatement()" class="btn btn-primary w-100">Generate</button></div></div></div>
+                    <div id="statement-result" class="d-none"><div class="row text-center mb-3"><div class="col-md-4"><div class="alert alert-success">Sales: <strong id="st-sales">0</strong></div></div><div class="col-md-4"><div class="alert alert-warning">Exp: <strong id="st-expenses">0</strong></div></div><div class="col-md-4"><div class="alert alert-info">Net: <strong id="st-profit">0</strong></div></div></div><table class="table table-bordered bg-white"><tbody id="st-table"></tbody></table></div>
+                </div>
+
+                <div id="settings" class="content-tab d-none">
+                    <h3>Settings</h3><hr>
+                    <div id="settings-lock" class="text-center p-5 bg-white shadow-sm"><h4>Restricted</h4><button class="btn btn-dark mt-2" onclick="requestAuth('settings')">Unlock</button></div>
+                    <div id="settings-content" class="d-none"><div class="row"><div class="col-md-7"><div class="card p-4"><form id="org-settings-form"><div class="mb-3"><label>Name</label><input type="text" id="set-name" class="form-control"></div><div class="mb-3"><label>Address</label><input type="text" id="set-address" class="form-control"></div><div class="row"><div class="col-6"><input type="text" id="set-phone" class="form-control"></div><div class="col-6"><input type="email" id="set-email" class="form-control"></div></div><div class="mt-3"><textarea id="set-footer" class="form-control"></textarea></div><button type="submit" class="btn btn-success mt-3">Save</button></form></div></div><div class="col-md-5"><div class="card p-4 border-danger"><h5 class="text-danger">Danger Zone</h5><button onclick="requestAuth('reset')" class="btn btn-danger w-100 mt-2">Factory Reset</button></div><div class="card p-4 mt-3"><button onclick="backupData()" class="btn btn-outline-primary w-100 mb-3">Backup Data</button><div class="input-group"><input type="file" id="import-file" class="form-control"><button class="btn btn-primary" onclick="importData()">Import</button></div></div></div></div></div>
                 </div>
             </div>
         </div>
+    </div>
+</div>
 
-        <!-- DEDICATED PRINT AREA (Hidden in normal view, displayed only for printing via CSS) -->
-        <div id="printArea" class="invoice-page p-8 bg-white max-w-4xl mx-auto shadow-none">
-            <!-- Content dynamically inserted here for printing -->
+<div class="modal fade" id="paymentModal" tabindex="-1"><div class="modal-dialog modal-sm"><div class="modal-content"><div class="modal-header bg-success text-white"><h5 class="modal-title">Payment</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><h4 id="pay-inv-num" class="text-center"></h4><div class="d-flex justify-content-between"><span>Due:</span><strong id="pay-current-due" class="text-danger"></strong></div><input type="number" id="pay-amount" class="form-control mt-3" placeholder="Amount"><input type="hidden" id="pay-inv-id"><button class="btn btn-success w-100 mt-3" onclick="savePayment()">Save</button></div></div></div></div>
+
+<div class="modal fade" id="finalizeModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white"><h5 class="modal-title">Finalize Invoice</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <h5 id="fin-shop-name"></h5>
+                <table class="table table-bordered">
+                    <thead class="table-light"><tr><th>Item</th><th>Qty</th><th>Buy</th><th>Sell</th><th>Total</th></tr></thead>
+                    <tbody id="finalize-table-body"></tbody>
+                    <tfoot><tr><td colspan="4" class="text-end fw-bold">Grand Total:</td><td id="fin-grand-total">0.00</td></tr></tfoot>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button class="btn btn-primary" onclick="window.confirmFinalize()">Finalize & Save</button>
+            </div>
         </div>
     </div>
+</div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, addDoc, deleteDoc, onSnapshot, collection, query, getDoc, setLogLevel, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+<div class="modal fade" id="authModal" tabindex="-1"><div class="modal-dialog modal-sm"><div class="modal-content"><div class="modal-header"><h5>Security</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><input type="password" id="auth-check-pass" class="form-control" placeholder="Password"><input type="hidden" id="auth-action-type"><input type="hidden" id="auth-action-id"></div><div class="modal-footer"><button class="btn btn-dark w-100" onclick="performAuthAction()">Verify</button></div></div></div></div>
+<div class="modal fade" id="printModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header d-print-none"><h5 class="modal-title">Preview</h5><button class="btn btn-primary ms-auto" onclick="window.print()">Print</button></div><div class="modal-body" id="preview-area"></div></div></div></div>
 
-        // setLogLevel('Debug'); // Uncomment for debugging
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, EmailAuthProvider, reauthenticateWithCredential } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
+import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, where, orderBy, getDoc, setDoc, increment } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
 
-        // --- GLOBAL SETUP ---
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+const firebaseConfig = { apiKey: "AIzaSyBv2cgBjOi-MMwS1xynPftCXI63uVEiRsk", authDomain: "zimam-pharma.firebaseapp.com", projectId: "zimam-pharma", storageBucket: "zimam-pharma.firebasestorage.app", messagingSenderId: "7955585226", appId: "1:7955585226:web:a18e625b47958d1b073c33", measurementId: "G-B6LHCTC9SE" };
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+let currentUser = null, currentDraftItems = [], finalizeItems = [], currentFinalizeId = null;
+
+// Auth
+document.getElementById('login-form').addEventListener('submit', (e) => { e.preventDefault(); toggleLoader(true); signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-password').value).then(() => toggleLoader(false)).catch(err => { alert(err.message); toggleLoader(false); }); });
+onAuthStateChanged(auth, (user) => {
+    currentUser = user;
+    if (user) {
+        document.getElementById('auth-section').classList.add('d-none'); document.getElementById('app-section').classList.remove('d-none');
+        document.getElementById('user-email-display').innerText = user.email; // SHOW EMAIL
+        triggerDashboardLoad(); loadSettings(); loadInventory();
+    } else {
+        document.getElementById('auth-section').classList.remove('d-none'); document.getElementById('app-section').classList.add('d-none');
+    }
+});
+document.getElementById('logout-btn').addEventListener('click', () => signOut(auth));
+
+window.showTab = (id) => {
+    document.querySelectorAll('.content-tab').forEach(el => el.classList.add('d-none')); document.getElementById(id).classList.remove('d-none');
+    if(id==='dashboard') triggerDashboardLoad(); if(id==='saved-invoices') loadSavedInvoices(); if(id==='new-invoice') loadDrafts(); if(id==='expenses') loadExpenses(); if(id==='inventory') loadInventory();
+};
+
+async function triggerDashboardLoad() {
+    try {
+        const debugStatus = document.getElementById('debug-status'); debugStatus.innerText = "Scanning..."; debugStatus.className = "text-warning";
+        const invSnap = await getDocs(query(collection(db, "invoices"), where("status", "==", "final")));
+        let rev=0, cogs=0, paid=0, invCount=0;
+        invSnap.forEach(doc => {
+            invCount++;
+            const d = doc.data();
+            let iTotal=0, iCost=0;
+            if(d.items) d.items.forEach(i => { iTotal += (i.qty||0)*(i.sellingRate||0); iCost += (i.qty||0)*(i.purchaseRate||0); });
+            rev += iTotal; cogs += iCost; paid += d.paidAmount||0;
+        });
+        let exp=0, expCount=0;
+        try { const expSnap = await getDocs(collection(db, "expenses")); expSnap.forEach(d => { expCount++; exp += d.data().amount||0; }); } catch(err){console.error(err);}
         
-        // Define the user's provided Firebase configuration as a fallback
-        const defaultFirebaseConfig = {
-            apiKey: "AIzaSyBv2cgBjOi-MMwS1xynPftCXI63uVEiRsk",
-            authDomain: "zimam-pharma.firebaseapp.com",
-            projectId: "zimam-pharma",
-            storageBucket: "zimam-pharma.firebasestorage.app",
-            messagingSenderId: "7955585226",
-            appId: "1:7955585226:web:a18e625b47958d1b073c33",
-            measurementId: "G-B6LHCTC9SE"
-        };
+        document.getElementById('dash-revenue').innerText = rev.toFixed(2);
+        document.getElementById('dash-expense').innerText = exp.toFixed(2);
+        document.getElementById('dash-net-profit').innerText = (rev - cogs - exp).toFixed(2);
+        document.getElementById('dash-due').innerText = (rev - paid).toFixed(2);
         
-        // Use the environment's config if available, otherwise use the user's config
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : defaultFirebaseConfig;
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        document.getElementById('logic-sales').innerText = rev.toFixed(2);
+        document.getElementById('logic-cogs').innerText = "- " + cogs.toFixed(2);
+        document.getElementById('logic-gross').innerText = (rev - cogs).toFixed(2);
+        document.getElementById('logic-exp').innerText = "- " + exp.toFixed(2);
+        document.getElementById('logic-net').innerText = (rev - cogs - exp).toFixed(2);
         
-        // DOM Elements
-        const loginSection = document.getElementById('loginSection');
-        const appContainer = document.getElementById('appContainer');
-        const mainLayout = document.querySelector('.main-layout');
-        const printArea = document.getElementById('printArea');
-        const loadingIndicator = document.getElementById('loadingIndicator');
-        const loginError = document.getElementById('loginError');
+        document.getElementById('debug-inv-count').innerText = invCount;
+        document.getElementById('debug-exp-count').innerText = expCount;
+        debugStatus.innerText = "System Live"; debugStatus.className = "text-success fw-bold";
+    } catch(e) { document.getElementById('debug-status').innerText = "Error"; }
+}
+window.triggerDashboardLoad = triggerDashboardLoad;
 
-        let db;
-        let auth;
-        let userId = null;
-        let isAuthReady = false;
-        let inventoryItems = []; // Array to store all items for quick lookup
+async function loadInventory() {
+    const snap = await getDocs(collection(db, "inventory"));
+    const list = document.getElementById('inv-item-helper'); const tbody = document.getElementById('inventory-table-body');
+    list.innerHTML='<option selected disabled>Select from Inventory</option>'; tbody.innerHTML='';
+    
+    // Process items to array for sorting
+    let items=[]; 
+    snap.forEach(d => items.push({ id: d.id, ...d.data() }));
+    items.sort((a, b) => a.name.localeCompare(b.name));
 
-        // Utility to show/hide loading state
-        function showLoading(show) {
-            loadingIndicator.classList.toggle('hidden', !show);
+    items.forEach(n => {
+        list.innerHTML += `<option value="${n.name}">${n.name}</option>`;
+        tbody.innerHTML += `
+        <tr>
+            <td>${n.name}</td>
+            <td><span class="badge bg-success">Active</span></td>
+            <td><button class="btn btn-sm btn-outline-danger" onclick="requestAuth('delete_inventory', '${n.id}')"><i class="fas fa-trash"></i></button></td>
+        </tr>`;
+    });
+}
+window.addManualInventory = async () => {
+    const n = document.getElementById('manual-inv-name').value.trim();
+    if(n) { await addDoc(collection(db,"inventory"),{name:n}); document.getElementById('manual-inv-name').value=''; loadInventory(); alert("Saved"); }
+};
+
+window.addItemToDraft = () => {
+    const i=document.getElementById('inv-item').value, q=parseFloat(document.getElementById('inv-qty').value), r=parseFloat(document.getElementById('inv-buy-rate').value);
+    if(i && q && !isNaN(r)) { 
+        currentDraftItems.push({item:i, qty:q, purchaseRate:r, subtotalBuy:q*r}); renderDraft(); 
+        document.getElementById('inv-item').value=''; document.getElementById('inv-qty').value=''; document.getElementById('inv-buy-rate').value='';
+    } else alert("Fill data");
+};
+function renderDraft(){ const tb=document.getElementById('temp-invoice-body'); tb.innerHTML=''; currentDraftItems.forEach((x,k)=>tb.innerHTML+=`<tr><td>${x.item}</td><td>${x.qty}</td><td>${x.purchaseRate}</td><td>${x.subtotalBuy}</td><td><button class="btn btn-sm btn-danger" onclick="currentDraftItems.splice(${k},1);renderDraft()">X</button></td></tr>`); }
+
+window.saveDraftInvoice = async () => {
+    const s=document.getElementById('inv-shop').value;
+    if(s && currentDraftItems.length) { 
+        await addDoc(collection(db,"invoices"), {shop:s, items:currentDraftItems, status:'draft', createdAt:new Date()});
+        currentDraftItems=[]; renderDraft(); document.getElementById('inv-shop').value=''; loadDrafts(); alert("Draft Saved");
+    } else alert("Fill data");
+};
+
+async function loadDrafts() {
+    const snap = await getDocs(query(collection(db,"invoices"), where("status","==","draft")));
+    const tb=document.getElementById('drafts-table-body'); tb.innerHTML='';
+    let d=[]; snap.forEach(x=>d.push({id:x.id, ...x.data()})); d.sort((a,b)=>b.createdAt-a.createdAt);
+    d.forEach(x=>{ tb.innerHTML+=`<tr><td>${x.createdAt.toDate().toLocaleDateString()}</td><td>${x.shop}</td><td>${x.items.length}</td><td><button class="btn btn-sm btn-primary" onclick="openFinalize('${x.id}','${x.shop}')">Finalize</button></td></tr>`; });
+}
+
+window.openFinalize = async (id, shop) => {
+    currentFinalizeId=id; document.getElementById('fin-shop-name').innerText=shop;
+    finalizeItems = (await getDoc(doc(db,"invoices",id))).data().items;
+    renderFinalize(); new bootstrap.Modal(document.getElementById('finalizeModal')).show();
+};
+
+window.updateItemRate = (idx, val) => {
+    finalizeItems[idx].sellingRate = parseFloat(val)||0;
+    renderFinalize();
+};
+
+function renderFinalize(){ 
+    const tb=document.getElementById('finalize-table-body'); tb.innerHTML=''; let t=0;
+    finalizeItems.forEach((x,k)=>{ 
+        const s=x.sellingRate||0; t+=x.qty*s;
+        tb.innerHTML+=`<tr><td>${x.item}</td><td>${x.qty}</td><td>${x.purchaseRate}</td><td><input type="number" step="0.01" class="form-control form-control-sm" value="${s||''}" onchange="window.updateItemRate(${k}, this.value)"></td><td>${(x.qty*s).toFixed(2)}</td></tr>`;
+    });
+    document.getElementById('fin-grand-total').innerText=t.toFixed(2);
+}
+
+window.confirmFinalize = async () => {
+    if(finalizeItems.some(x=>!x.sellingRate)) return alert("Enter all rates");
+    toggleLoader(true);
+    
+    // SMART INVENTORY LOGIC
+    const invSnap = await getDocs(collection(db, "inventory"));
+    const existingNames = new Set();
+    invSnap.forEach(d => existingNames.add(d.data().name.trim().toLowerCase()));
+
+    for(const item of finalizeItems) {
+        const cleanName = item.item.trim();
+        if (!existingNames.has(cleanName.toLowerCase())) {
+            await addDoc(collection(db, "inventory"), { name: cleanName });
+            existingNames.add(cleanName.toLowerCase()); // Add to set to prevent dupes in same invoice
         }
+    }
+
+    await updateDoc(doc(db,"invoices",currentFinalizeId), {status:'final', items:finalizeItems, finalizedAt:new Date(), invoiceNum:"INV-"+Date.now().toString().slice(-6), paidAmount:0});
+    bootstrap.Modal.getInstance(document.getElementById('finalizeModal')).hide();
+    loadDrafts(); loadInventory(); triggerDashboardLoad(); toggleLoader(false); alert("Finalized");
+};
+
+async function loadSavedInvoices() {
+    const snap = await getDocs(query(collection(db,"invoices"), where("status","==","final")));
+    const tb=document.getElementById('saved-invoices-body'); tb.innerHTML='';
+    let d=[]; snap.forEach(x=>d.push({id:x.id, ...x.data()})); d.sort((a,b)=>b.finalizedAt-a.finalizedAt);
+    d.forEach(x=>{
+        let t=0; x.items.forEach(i=>t+=i.qty*i.sellingRate); const p=x.paidAmount||0;
+        tb.innerHTML+=`
+        <tr class="inv-row">
+            <td>${x.invoiceNum}</td>
+            <td>${x.finalizedAt.toDate().toLocaleDateString()}</td>
+            <td>${x.shop}</td>
+            <td>${t.toFixed(2)}</td>
+            <td class="text-success">${p.toFixed(2)}</td>
+            <td class="text-danger fw-bold">${(t-p).toFixed(2)}</td>
+            <td>
+                <button class="btn btn-sm btn-info" onclick="printView('${x.id}')"><i class="fas fa-print"></i></button> 
+                <button class="btn btn-sm btn-success" onclick="openPay('${x.id}','${x.invoiceNum}',${t-p})"><i class="fas fa-dollar-sign"></i></button>
+                <button class="btn btn-sm btn-danger" onclick="requestAuth('delete_invoice', '${x.id}')"><i class="fas fa-trash"></i></button>
+            </td>
+        </tr>`;
+    });
+}
+
+window.openPay = (id,n,d) => { document.getElementById('pay-inv-id').value=id; document.getElementById('pay-inv-num').innerText=n; document.getElementById('pay-current-due').innerText=d.toFixed(2); new bootstrap.Modal(document.getElementById('paymentModal')).show(); };
+window.savePayment = async () => {
+    const id=document.getElementById('pay-inv-id').value, a=parseFloat(document.getElementById('pay-amount').value);
+    if(a>0) { await updateDoc(doc(db,"invoices",id),{paidAmount:increment(a)}); bootstrap.Modal.getInstance(document.getElementById('paymentModal')).hide(); loadSavedInvoices(); triggerDashboardLoad(); }
+};
+
+window.saveExpense = async () => {
+    const d=document.getElementById('exp-desc').value, a=parseFloat(document.getElementById('exp-amount').value);
+    if(d && a) { await addDoc(collection(db,"expenses"),{description:d, amount:a, date:new Date()}); document.getElementById('exp-desc').value=''; document.getElementById('exp-amount').value=''; loadExpenses(); triggerDashboardLoad(); alert("Saved"); }
+    else alert("Fill all");
+};
+async function loadExpenses() {
+    const snap = await getDocs(query(collection(db,"expenses"), orderBy("date","desc")));
+    const tb=document.getElementById('expense-list'); tb.innerHTML='';
+    snap.forEach(d=>tb.innerHTML+=`
+    <tr>
+        <td>${d.data().date.toDate().toLocaleDateString()}</td>
+        <td>${d.data().description}</td>
+        <td>${d.data().amount}</td>
+        <td><button class="btn btn-sm btn-outline-danger" onclick="requestAuth('delete_expense', '${d.id}')"><i class="fas fa-trash"></i></button></td>
+    </tr>`);
+}
+
+window.printView = async (id) => {
+    const d=(await getDoc(doc(db,"invoices",id))).data();
+    const s=(await getDoc(doc(db,"settings","config"))).data()||{name:"Zimam Pharma"};
+    let r='', t=0; d.items.forEach(i=>{t+=i.qty*i.sellingRate; r+=`<tr><td>${i.item}</td><td>${i.qty}</td><td>${i.sellingRate}</td><td>${(i.qty*i.sellingRate).toFixed(2)}</td></tr>`;});
+    document.getElementById('preview-area').innerHTML=`<div class="p-3 border"><h3>${s.name}</h3><p>${s.address||''}</p><hr><h5>Bill To: ${d.shop}</h5><table class="table table-sm"><thead><tr><th>Item</th><th>Qty</th><th>Rate</th><th>Total</th></tr></thead><tbody>${r}</tbody></table><h4 class="text-end">Total: ${t.toFixed(2)}</h4></div>`;
+    document.getElementById('printable-container').innerHTML=document.getElementById('preview-area').innerHTML;
+    new bootstrap.Modal(document.getElementById('printModal')).show();
+};
+
+window.generateStatement = async () => {
+    const s=new Date(document.getElementById('st-start').value), e=new Date(document.getElementById('st-end').value); e.setHours(23,59,59);
+    const inv=await getDocs(query(collection(db,"invoices"),where("status","==","final"))), exp=await getDocs(query(collection(db,"expenses"),where("date",">=",s),where("date","<=",e)));
+    let ts=0, te=0, h='';
+    inv.forEach(d=>{ const x=d.data(); if(x.finalizedAt.toDate()>=s && x.finalizedAt.toDate()<=e){ let t=0;x.items.forEach(i=>t+=i.qty*i.sellingRate); ts+=t; h+=`<tr><td>${x.finalizedAt.toDate().toLocaleDateString()}</td><td>Sale: ${x.shop}</td><td>${t.toFixed(2)}</td></tr>`; }});
+    exp.forEach(d=>{ te+=d.data().amount; h+=`<tr><td>${d.data().date.toDate().toLocaleDateString()}</td><td>Exp: ${d.data().description}</td><td>-${d.data().amount}</td></tr>`; });
+    document.getElementById('st-sales').innerText=ts.toFixed(2); document.getElementById('st-expenses').innerText=te.toFixed(2); document.getElementById('st-profit').innerText=(ts-te).toFixed(2); document.getElementById('st-table').innerHTML=h; document.getElementById('statement-result').classList.remove('d-none');
+};
+
+async function loadSettings() { const d=(await getDoc(doc(db,"settings","config"))).data(); if(d){document.getElementById('set-name').value=d.name||''; document.getElementById('set-address').value=d.address||''; document.getElementById('set-phone').value=d.phone||''; document.getElementById('set-email').value=d.email||''; document.getElementById('set-footer').value=d.footer||'';}}
+document.getElementById('org-settings-form').addEventListener('submit',async(e)=>{e.preventDefault(); await setDoc(doc(db,"settings","config"),{name:document.getElementById('set-name').value, address:document.getElementById('set-address').value, phone:document.getElementById('set-phone').value, email:document.getElementById('set-email').value, footer:document.getElementById('set-footer').value}); alert("Saved");});
+
+window.backupData = async () => { const i=[],e=[],n=[]; (await getDocs(collection(db,"invoices"))).forEach(d=>i.push(d.data())); (await getDocs(collection(db,"expenses"))).forEach(d=>e.push(d.data())); (await getDocs(collection(db,"inventory"))).forEach(d=>n.push(d.data())); const b=new Blob([JSON.stringify({invoices:i,expenses:e,inventory:n})],{type:"application/json"}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download="backup.json"; a.click(); };
+window.importData = () => { const f=document.getElementById('import-file').files[0]; const r=new FileReader(); r.onload=async(e)=>{ const d=JSON.parse(e.target.result); if(d.invoices)for(const i of d.invoices)await addDoc(collection(db,"invoices"),{...i,createdAt:new Date(i.createdAt),finalizedAt:new Date(i.finalizedAt)}); if(d.expenses)for(const i of d.expenses)await addDoc(collection(db,"expenses"),{...i,date:new Date(i.date)}); if(d.inventory)for(const i of d.inventory)await addDoc(collection(db,"inventory"),i); alert("Imported"); location.reload(); }; r.readAsText(f); };
+
+// Security
+window.requestAuth = (t,id) => { document.getElementById('auth-action-type').value=t; document.getElementById('auth-action-id').value=id||''; new bootstrap.Modal(document.getElementById('authModal')).show(); };
+window.performAuthAction = async () => { 
+    try { 
+        await reauthenticateWithCredential(currentUser, EmailAuthProvider.credential(currentUser.email, document.getElementById('auth-check-pass').value)); 
+        const t=document.getElementById('auth-action-type').value; 
+        const id=document.getElementById('auth-action-id').value; 
+        bootstrap.Modal.getInstance(document.getElementById('authModal')).hide(); 
         
-        // Display custom error message on login screen
-        function displayLoginError(message) {
-            loginError.textContent = message;
-            loginError.classList.remove('hidden');
-        }
+        if(t==='settings'){document.getElementById('settings-lock').classList.add('d-none');document.getElementById('settings-content').classList.remove('d-none');}
         
-        // Custom Alert/Console Message
-        function alertMessage(title, message) {
-            console.warn(title + ": " + message);
-            // Use window.alert for better visibility in this environment, as custom modals are complex
-            window.alert(`${title}\n\n${message}`); 
-        }
-
-
-        // --- FIREBASE INITIALIZATION & AUTH ---
-        try {
-            const app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
-            
-            showLoading(true);
-
-            onAuthStateChanged(auth, async (user) => {
-                showLoading(false);
-                if (user) {
-                    // User is signed in (either by custom token or successful login)
-                    userId = user.uid;
-                    isAuthReady = true;
-                    loginSection.classList.add('hidden');
-                    appContainer.classList.remove('hidden');
-                    mainLayout.classList.remove('hidden'); // Ensure main layout is visible
-                    console.log("Authenticated user:", userId);
-                    setupListeners(); 
-                    setView('createInvoice'); // Default view after login
-                } else {
-                    // User is signed out or initial check failed/no custom token
-                    userId = null;
-                    isAuthReady = false;
-                    loginSection.classList.remove('hidden');
-                    appContainer.classList.add('hidden');
-                    mainLayout.classList.remove('hidden'); // Ensure main layout is visible
-                    console.log("User is logged out. Showing login screen.");
-                }
-            });
-            
-            // Check for and use the custom token if provided by the environment
-            if (initialAuthToken) {
-                 signInWithCustomToken(auth, initialAuthToken).catch(e => {
-                    console.error("Custom token sign-in failed:", e);
-                 });
-            }
-
-        } catch (e) {
-            console.error("Failed to initialize Firebase:", e);
-            document.body.innerHTML = `<div class="p-8 text-red-700 bg-red-100 rounded-lg">Error: Could not initialize Firebase. Please check the console for details.</div>`;
-        }
-        
-        function getUserCollectionPath(collectionName) {
-            if (!userId) return null;
-            // Private data path for this application's user
-            return `artifacts/${appId}/users/${userId}/${collectionName}`;
-        }
-        
-        // --- AUTHENTICATION FUNCTIONS ---
-        
-        async function handleLogin(event) {
-            event.preventDefault(); // Stop form submission
-            loginError.classList.add('hidden');
-            showLoading(true);
-
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-
-            try {
-                await signInWithEmailAndPassword(auth, email, password);
-                // Auth listener handles view switch on success
-            } catch (error) {
-                let errorMessage = "Login failed. Please check your email and password.";
-                if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
-                    errorMessage = "Invalid login credentials.";
-                } else {
-                    console.error("Login error code:", error.code);
-                    errorMessage = `An error occurred: ${error.code.split('/')[1] || error.message}`;
-                }
-                displayLoginError(errorMessage);
-            } finally {
-                showLoading(false);
-            }
-        }
-        
-        async function handleLogout() {
-            try {
-                await signOut(auth);
-                // Auth listener handles view switch to login screen
-            } catch (error) {
-                console.error("Logout error:", error);
-                alertMessage("Logout Error", "Failed to log out. Please try again.");
-            }
-        }
-
-        // --- VIEW MANAGEMENT ---
-        function setView(viewName) {
-            document.querySelectorAll('.view-section').forEach(section => {
-                section.classList.add('hidden');
-            });
-            document.getElementById(`${viewName}Section`).classList.remove('hidden');
-
-            document.querySelectorAll('nav button').forEach(button => {
-                button.classList.remove('bg-blue-600', 'text-white');
-                button.classList.add('bg-gray-200', 'text-gray-800');
-            });
-            document.getElementById(`nav-${viewName}`).classList.remove('bg-gray-200', 'text-gray-800');
-            document.getElementById(`nav-${viewName}`).classList.add('bg-blue-600', 'text-white');
-
-            if (viewName === 'createInvoice') {
-                resetInvoiceForm();
-            }
-        }
-
-        // --- INVOICE HEADER LOGIC ---
-        function setInvoiceDate() {
-            const now = new Date();
-            const formattedDate = now.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' });
-            document.getElementById('invoiceDate').textContent = formattedDate;
-        }
-
-        function setReceiptNumber() {
-            const now = new Date();
-            const dateStr = now.getFullYear().toString() +
-                            (now.getMonth() + 1).toString().padStart(2, '0') +
-                            now.getDate().toString().padStart(2, '0');
-            const randomSuffix = Math.floor(Math.random() * 900 + 100);
-            const receiptNumber = `INV-${dateStr}-${randomSuffix}`;
-            document.getElementById('receiptNo').textContent = receiptNumber;
-        }
-
-        // --- INVOICE BODY/CALCULATION LOGIC ---
-
-        function calculateRowTotal(rowElement) {
-            const quantityInput = rowElement.querySelector('.quantity-input');
-            const rateInput = rowElement.querySelector('.rate-input');
-            const totalInput = rowElement.querySelector('.total-input');
-
-            // Use Math.max(0, ...) to prevent negative values in calculations
-            const quantity = Math.max(0, parseFloat(quantityInput.value) || 0);
-            const rate = Math.max(0, parseFloat(rateInput.value) || 0);
-
-            const total = quantity * rate;
-
-            totalInput.value = total.toFixed(2);
-            calculateGrandTotal();
-        }
-
-        function calculateGrandTotal() {
-            const totalInputs = document.querySelectorAll('#invoiceTableBody .total-input');
-            let grandTotal = 0;
-
-            totalInputs.forEach(input => {
-                grandTotal += parseFloat(input.value) || 0;
-            });
-
-            document.getElementById('totalPayableAmount').textContent = '৳' + grandTotal.toFixed(2);
-            return grandTotal;
-        }
-        
-        function lookupRate(inputElement) {
-            const itemName = inputElement.value.trim().toLowerCase();
-            const rowElement = inputElement.closest('tr');
-            const rateInput = rowElement.querySelector('.rate-input');
-            
-            const matchedItem = inventoryItems.find(item => item.name.toLowerCase() === itemName);
-
-            if (matchedItem) {
-                // If a match is found and the rate is currently 0 or empty, auto-fill it.
-                if (parseFloat(rateInput.value) === 0 || rateInput.value === "") {
-                     rateInput.value = matchedItem.rate.toFixed(2);
-                }
-            }
-            
-            // Recalculate based on current rate and quantity (allows overriding)
-            calculateRowTotal(rowElement);
-        }
-        
-        let currentRowNumber = 1;
-
-        function addRow() {
-            const tableBody = document.getElementById('invoiceTableBody');
-            
-            const rowId = currentRowNumber;
-            const newRowHTML = `
-                <tr data-row-id="${rowId}" class="hover:bg-gray-50 transition duration-100">
-                    <!-- SL No -->
-                    <td class="px-4 py-1 whitespace-nowrap text-sm font-medium text-gray-900 sl-no-cell">${rowId}</td>
-
-                    <!-- Item Description -->
-                    <td class="px-4 py-1">
-                        <input type="text" list="item-names" class="item-input text-sm item-name-input" placeholder="e.g., Service hours, Product X" 
-                                oninput="lookupRate(this)">
-                    </td>
-
-                    <!-- Quantity -->
-                    <td class="px-4 py-1">
-                        <input type="number" step="1" min="1" value="1" class="item-input text-right quantity-input" 
-                                oninput="calculateRowTotal(this.closest('tr'))">
-                    </td>
-
-                    <!-- Rate (BDT) -->
-                    <td class="px-4 py-1">
-                        <input type="number" step="0.01" min="0" value="0.00" class="item-input text-right rate-input" 
-                                oninput="calculateRowTotal(this.closest('tr'))">
-                    </td>
-
-                    <!-- Total Amount (Calculated) -->
-                    <td class="px-4 py-1 total-input-cell">
-                        <input type="text" value="0.00" class="item-input text-right font-semibold total-input" readonly>
-                    </td>
-
-                    <!-- Delete Button -->
-                    <td class="px-2 py-1 no-print">
-                        <button onclick="deleteRow(this.closest('tr'))" class="text-red-500 hover:text-red-700 transition">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 10-2 0v6a1 1 0 102 0V8z" clip-rule="evenodd"/></svg>
-                        </button>
-                    </td>
-                </tr>
-            `;
-
-            tableBody.insertAdjacentHTML('beforeend', newRowHTML);
-            currentRowNumber++;
-            reindexRows();
-            
-            const addedRow = tableBody.lastElementChild;
-            if (addedRow) {
-                calculateRowTotal(addedRow);
-            }
-        }
-
-        function deleteRow(rowElement) {
-            if (document.querySelectorAll('#invoiceTableBody tr').length > 1) {
-                rowElement.remove();
-                reindexRows();
-                calculateGrandTotal();
-            } else {
-                const inputs = rowElement.querySelectorAll('input');
-                inputs.forEach(input => {
-                    if (input.type === 'text' && input.classList.contains('item-name-input')) {
-                        input.value = '';
-                    } else if (input.type === 'number' && input.classList.contains('quantity-input')) {
-                        input.value = '1';
-                    } else if (input.type === 'number' && input.classList.contains('rate-input')) {
-                        input.value = '0.00';
-                    } else if (input.classList.contains('total-input')) {
-                        input.value = '0.00';
-                    }
-                });
-                calculateRowTotal(rowElement);
-            }
-        }
-
-        function reindexRows() {
-            const rows = document.querySelectorAll('#invoiceTableBody tr');
-            let index = 1;
-            rows.forEach(row => {
-                row.querySelector('.sl-no-cell').textContent = index++;
-            });
-            currentRowNumber = index;
-        }
-
-        function resetInvoiceForm() {
-            setInvoiceDate();
-            setReceiptNumber();
-            document.getElementById('orgName').value = "Your Organization Name";
-            document.getElementById('orgAddress').value = "123 Business Blvd, City, Country";
-            document.getElementById('invoiceTableBody').innerHTML = '';
-            addRow(); // Start with one fresh row
-        }
-
-        // --- ITEM INVENTORY MANAGEMENT (Firestore) ---
-        
-        function setupListeners() {
-            if (!isAuthReady || !db) return;
-
-            // 1. Listen for Inventory Items (ItemsList)
-            const itemsPath = getUserCollectionPath('items');
-            if (itemsPath) {
-                onSnapshot(collection(db, itemsPath), (snapshot) => {
-                    inventoryItems = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    renderItemsTable();
-                    renderItemDatalist();
-                }, (error) => {
-                    console.error("Error listening to inventory items:", error);
-                });
-            }
-
-            // 2. Listen for Saved Invoices (InvoicesList)
-            const invoicesPath = getUserCollectionPath('invoices');
-            if (invoicesPath) {
-                 onSnapshot(query(collection(db, invoicesPath)), (snapshot) => {
-                    const invoices = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    renderInvoicesList(invoices);
-                }, (error) => {
-                    console.error("Error listening to saved invoices:", error);
-                });
-            }
-        }
-
-        function renderItemDatalist() {
-            const datalist = document.getElementById('item-names');
-            if (!datalist) return;
-            datalist.innerHTML = inventoryItems.map(item => 
-                `<option value="${item.name}"></option>`
-            ).join('');
-        }
-
-        async function saveItem() {
-            if (!isAuthReady || !db) { alertMessage("Error", "Please log in to save items."); return; }
-
-            const nameInput = document.getElementById('newItemName');
-            const rateInput = document.getElementById('newItemRate');
-            
-            const name = nameInput.value.trim();
-            const rate = parseFloat(rateInput.value);
-
-            if (!name || isNaN(rate) || rate < 0) {
-                alertMessage("Validation Error", "Please enter a valid item name and non-negative rate.");
-                return;
-            }
-
-            const itemsPath = getUserCollectionPath('items');
-            try {
-                await addDoc(collection(db, itemsPath), {
-                    name: name,
-                    rate: rate,
-                    createdAt: Date.now()
-                });
-                nameInput.value = '';
-                rateInput.value = '';
-            } catch (e) {
-                console.error("Error adding document: ", e);
-                alertMessage("Save Error", "Failed to save item.");
-            }
-        }
-
-        async function deleteItem(itemId) {
-            if (!isAuthReady || !db) { alertMessage("Error", "Please log in to delete items."); return; }
-            const itemsPath = getUserCollectionPath('items');
-            try {
-                await deleteDoc(doc(db, itemsPath, itemId));
-            } catch (e) {
-                console.error("Error deleting document: ", e);
-                alertMessage("Delete Error", "Failed to delete item.");
-            }
-        }
-
-        function renderItemsTable() {
-            const tableBody = document.getElementById('itemsTableBody');
-            tableBody.innerHTML = ''; 
-            document.getElementById('noItemsRow')?.remove();
-
-            if (inventoryItems.length === 0) {
-                tableBody.insertAdjacentHTML('beforeend', '<tr id="noItemsRow"><td colspan="3" class="p-4 text-center text-gray-500">No items added yet.</td></tr>');
-                return;
-            }
-
-            inventoryItems.forEach(item => {
-                const row = `
-                    <tr class="hover:bg-gray-50 transition duration-100">
-                        <td class="px-4 py-2 text-sm font-medium text-gray-900">${item.name}</td>
-                        <td class="px-4 py-2 text-sm text-right">৳${item.rate.toFixed(2)}</td>
-                        <td class="px-4 py-2 text-center">
-                            <button onclick="deleteItem('${item.id}')" class="text-red-500 hover:text-red-700 transition text-sm">Delete</button>
-                        </td>
-                    </tr>
-                `;
-                tableBody.insertAdjacentHTML('beforeend', row);
-            });
+        if(t==='delete_invoice') {
+            await deleteDoc(doc(db, "invoices", id));
+            loadSavedInvoices(); triggerDashboardLoad();
+            alert("Invoice Deleted");
         }
         
-        // --- INVOICE SAVING (Firestore) ---
-
-        function getInvoiceData() {
-            const items = [];
-            const rows = document.querySelectorAll('#invoiceTableBody tr');
-            let isValid = true;
-
-            rows.forEach(row => {
-                const name = row.querySelector('.item-name-input').value.trim();
-                const quantity = parseFloat(row.querySelector('.quantity-input').value);
-                const rate = parseFloat(row.querySelector('.rate-input').value);
-                const total = parseFloat(row.querySelector('.total-input').value);
-                
-                if (name && quantity > 0 && rate >= 0) {
-                    items.push({ name, quantity, rate, total });
-                } else if (name || quantity > 0 || rate > 0) {
-                    isValid = false; // Invalid partial row
-                }
-            });
-
-            if (!isValid) {
-                 alertMessage("Validation Error", "Please ensure all non-empty rows have a valid Item Description, Quantity (> 0), and Rate (>= 0).");
-                 return null;
-            }
-            
-            if (items.length === 0) {
-                alertMessage("Empty Invoice", "Please add at least one item to save the invoice.");
-                return null;
-            }
-
-            return {
-                orgName: document.getElementById('orgName').value.trim(),
-                orgAddress: document.getElementById('orgAddress').value.trim(),
-                invoiceNo: document.getElementById('receiptNo').textContent,
-                date: document.getElementById('invoiceDate').textContent,
-                items: items,
-                grandTotal: calculateGrandTotal(),
-                savedAt: Date.now()
-            };
+        if(t==='delete_expense') {
+            await deleteDoc(doc(db, "expenses", id));
+            loadExpenses(); triggerDashboardLoad();
+            alert("Expense Deleted");
         }
 
-        async function saveInvoice() {
-            if (!isAuthReady || !db) { alertMessage("Error", "Please log in to save invoices."); return; }
-            const invoiceData = getInvoiceData();
-            if (!invoiceData) return;
-
-            const invoicesPath = getUserCollectionPath('invoices');
-            try {
-                showLoading(true);
-                await addDoc(collection(db, invoicesPath), invoiceData);
-                alertMessage("Success", `Invoice ${invoiceData.invoiceNo} saved successfully!`);
-                resetInvoiceForm();
-                setView('invoicesList'); 
-            } catch (e) {
-                console.error("Error saving invoice: ", e);
-                alertMessage("Save Error", "Failed to save invoice.");
-            } finally {
-                showLoading(false);
-            }
-        }
-        
-        // --- INVOICE LISTING ---
-
-        function renderInvoicesList(invoices) {
-            const container = document.getElementById('invoicesListContainer');
-            container.innerHTML = '';
-            
-            if (invoices.length === 0) {
-                container.innerHTML = `<p class="text-gray-500">No invoices saved yet. Go to 'Create New Invoice' to start.</p>`;
-                return;
-            }
-
-            // Sort by latest first
-            invoices.sort((a, b) => b.savedAt - a.savedAt); 
-
-            invoices.forEach(invoice => {
-                const date = new Date(invoice.savedAt).toLocaleDateString();
-                const total = parseFloat(invoice.grandTotal).toFixed(2);
-                
-                const card = `
-                    <div class="p-4 border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition bg-white flex justify-between items-center">
-                        <div>
-                            <p class="text-lg font-semibold text-gray-800">${invoice.orgName}</p>
-                            <p class="text-sm text-gray-600">No: ${invoice.invoiceNo} | Date: ${invoice.date}</p>
-                            <p class="text-xs text-gray-400">Saved on: ${date}</p>
-                        </div>
-                        <div class="text-right flex flex-col items-end">
-                            <p class="text-xl font-bold text-green-700">৳${total}</p>
-                            <div class="mt-2 space-x-2">
-                                <button onclick="viewInvoiceDetails('${invoice.id}')" class="text-blue-600 hover:underline text-sm">View Details</button>
-                                <button onclick="printSavedInvoice('${invoice.id}')" class="text-indigo-600 hover:underline text-sm">Print Invoice</button> 
-                            </div>
-                        </div>
-                    </div>
-                `;
-                container.insertAdjacentHTML('beforeend', card);
-            });
-        }
-        
-        async function viewInvoiceDetails(invoiceId) {
-             if (!isAuthReady || !db) return;
-             
-             const invoicePath = getUserCollectionPath('invoices');
-             try {
-                const docRef = doc(db, invoicePath, invoiceId);
-                const docSnap = await getDoc(docRef);
-
-                if (docSnap.exists()) {
-                    const invoice = docSnap.data();
-                    let details = `Invoice No: ${invoice.invoiceNo}\n`;
-                    details += `Organization: ${invoice.orgName}\n`;
-                    details += `Address: ${invoice.orgAddress}\n`;
-                    details += `Date: ${invoice.date}\n\n`;
-                    details += "--- Items ---\n";
-                    invoice.items.forEach((item, index) => {
-                        details += `${index + 1}. ${item.name}\n`;
-                        details += `   Qty: ${item.quantity}, Rate: ৳${item.rate.toFixed(2)}, Total: ৳${item.total.toFixed(2)}\n`;
-                    });
-                    details += `\n--- GRAND TOTAL ---\n`;
-                    details += `TOTAL PAYABLE: ৳${invoice.grandTotal.toFixed(2)}`;
-                    
-                    alertMessage("Invoice Details", details);
-                } else {
-                    alertMessage("Error", "Invoice not found.");
-                }
-            } catch (e) {
-                console.error("Error fetching invoice details:", e);
-                alertMessage("Error", "Failed to load invoice details.");
-            }
-        }
-        
-        // --- PRINTING SAVED INVOICE (FIXED LOGIC) ---
-        
-        // Generates the clean, non-interactive HTML for printing
-        function generatePrintableInvoiceHTML(invoice) {
-            let itemsRows = '';
-            invoice.items.forEach((item, index) => {
-                itemsRows += `
-                    <tr class="divide-y divide-gray-200">
-                        <td class="px-4 py-2 text-left text-sm text-gray-900 w-1/12">${index + 1}</td>
-                        <td class="px-4 py-2 text-left text-sm text-gray-900 w-4/12">${item.name}</td>
-                        <td class="px-4 py-2 text-right text-sm text-gray-900 w-2/12">${item.quantity}</td>
-                        <td class="px-4 py-2 text-right text-sm text-gray-900 w-2/12">৳${item.rate.toFixed(2)}</td>
-                        <td class="px-4 py-2 text-right text-sm font-medium text-gray-900 w-2/12">৳${item.total.toFixed(2)}</td>
-                    </tr>
-                `;
-            });
-            
-            return `
-                <div class="invoice-page p-8">
-                    <!-- Header -->
-                    <header class="mb-6 pb-4 border-b border-gray-700">
-                        <div class="flex justify-between items-end">
-                            <!-- Organization Details -->
-                            <div>
-                                <h1 class="text-3xl font-bold text-gray-800 mb-2">INVOICE</h1>
-                                <p class="text-xl font-semibold mb-1 text-gray-900">${invoice.orgName}</p>
-                                <p class="text-sm text-gray-600">${invoice.orgAddress}</p>
-                            </div>
-                            
-                            <!-- Invoice Metadata -->
-                            <div class="text-right">
-                                <div class="flex justify-end mb-1">
-                                    <span class="text-gray-500 font-medium w-32">Invoice No:</span>
-                                    <span class="font-semibold text-gray-800 w-40">${invoice.invoiceNo}</span>
-                                </div>
-                                <div class="flex justify-end">
-                                    <span class="text-gray-500 font-medium w-32">Date:</span>
-                                    <span class="font-semibold text-gray-800 w-40">${invoice.date}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </header>
-
-                    <!-- Items Table -->
-                    <main>
-                        <table class="min-w-full divide-y divide-gray-700 print-table border border-gray-700">
-                            <thead>
-                                <tr class="bg-gray-100 border-b border-gray-700">
-                                    <th class="px-4 py-2 text-left text-xs font-bold text-gray-700 uppercase tracking-wider w-1/12">SL No</th>
-                                    <th class="px-4 py-2 text-left text-xs font-bold text-gray-700 uppercase tracking-wider w-4/12">Item Description</th>
-                                    <th class="px-4 py-2 text-right text-xs font-bold text-gray-700 uppercase tracking-wider w-2/12">Quantity</th>
-                                    <th class="px-4 py-2 text-right text-xs font-bold text-gray-700 uppercase tracking-wider w-2/12">Rate (BDT)</th>
-                                    <th class="px-4 py-2 text-right text-xs font-bold text-gray-700 uppercase tracking-wider w-2/12">Total Amount</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                ${itemsRows}
-                            </tbody>
-                        </table>
-                    </main>
-
-                    <!-- Footer (Totals) -->
-                    <footer class="mt-8 pt-4 border-t border-gray-700">
-                        <div class="flex justify-end">
-                            <div class="w-full sm:w-1/3">
-                                <div class="flex justify-between items-center py-2">
-                                    <span class="text-lg font-bold text-gray-700">TOTAL PAYABLE AMOUNT:</span>
-                                    <span class="text-2xl font-extrabold text-gray-800">৳${invoice.grandTotal.toFixed(2)}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </footer>
-                </div>
-            `;
-        }
-        
-        async function printSavedInvoice(invoiceId) {
-            if (!isAuthReady || !db) { 
-                alertMessage("Error", "Please log in to print invoices."); 
-                return; 
-            }
-            
-            showLoading(true);
-
-            const invoicePath = getUserCollectionPath('invoices');
-            try {
-                const docRef = doc(db, invoicePath, invoiceId);
-                const docSnap = await getDoc(docRef);
-
-                if (docSnap.exists()) {
-                    const invoice = docSnap.data();
-                    
-                    // 1. Generate the printable HTML
-                    const printHtml = generatePrintableInvoiceHTML(invoice);
-                    
-                    // 2. Insert into the dedicated print area
-                    printArea.innerHTML = printHtml;
-
-                    // 3. Temporarily show the print area to override the display: none set in the <style> block
-                    // The @media print CSS will handle hiding the rest of the appContainer
-                    printArea.style.display = 'block';
-
-                    // 4. Trigger print
-                    window.print();
-                    
-                } else {
-                    alertMessage("Error", "Invoice not found.");
-                }
-            } catch (e) {
-                console.error("Error fetching or printing invoice:", e);
-                alertMessage("Print Error", "Failed to prepare invoice for printing.");
-            } finally {
-                // 5. Always restore #printArea to hidden state (display: none) after print dialog closes/finishes
-                printArea.style.display = 'none';
-                printArea.innerHTML = '';
-                showLoading(false);
-            }
+        if(t==='delete_inventory') {
+            await deleteDoc(doc(db, "inventory", id));
+            loadInventory();
+            alert("Item Deleted from Inventory");
         }
 
-
-        // --- BACKUP/RESTORE FUNCTIONS ---
-
-        async function exportData() {
-            if (!isAuthReady || !db) { 
-                alertMessage("Error", "Please log in to export data."); 
-                return; 
-            }
-
-            if (!window.confirm("Are you sure you want to export all your data (Invoices and Inventory Items)?")) {
-                return;
-            }
-
-            showLoading(true);
-            
-            const itemsPath = getUserCollectionPath('items');
-            const invoicesPath = getUserCollectionPath('invoices');
-
-            try {
-                // 1. Fetch all items
-                const itemSnapshot = await getDocs(collection(db, itemsPath));
-                // Do not include id for simpler re-import as Firestore auto-generates IDs
-                const items = itemSnapshot.docs.map(doc => ({ ...doc.data() })); 
-
-                // 2. Fetch all invoices
-                const invoiceSnapshot = await getDocs(collection(db, invoicesPath));
-                const invoices = invoiceSnapshot.docs.map(doc => ({ ...doc.data() }));
-                
-                const backupData = {
-                    version: '1.0',
-                    exportedAt: new Date().toISOString(),
-                    userId: userId,
-                    items: items,
-                    invoices: invoices
-                };
-                
-                // Convert to JSON string
-                const jsonString = JSON.stringify(backupData, null, 2);
-                const blob = new Blob([jsonString], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                
-                // Create a link and trigger download
-                const a = document.createElement('a');
-                a.href = url;
-                const date = new Date().toISOString().slice(0, 10);
-                a.download = `invoice-manager-backup-${date}.json`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                
-                alertMessage("Success", "Data export complete! Check your downloads folder.");
-
-            } catch (e) {
-                console.error("Error exporting data:", e);
-                alertMessage("Export Error", "Failed to export data. Check the console for details.");
-            } finally {
-                showLoading(false);
-            }
-        }
-        
-        async function handleImport(event) {
-            if (!isAuthReady || !db) { 
-                alertMessage("Error", "Please log in to import data."); 
-                return; 
-            }
-
-            const file = event.target.files[0];
-            if (!file) return;
-
-            if (!window.confirm("CRITICAL WARNING: This action will permanently DELETE ALL your existing Invoices and Inventory Items and replace them with the data in the selected file. Are you absolutely sure you want to proceed?")) {
-                event.target.value = null; 
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                showLoading(true);
-                try {
-                    const data = JSON.parse(e.target.result);
-                    if (!data.items || !data.invoices || data.version !== '1.0') {
-                        throw new Error("Invalid backup file structure or version mismatch. Please ensure it is a valid backup file.");
-                    }
-                    
-                    // Proceed with data restoration
-                    await restoreData(data.items, data.invoices);
-                    alertMessage("Success", "Data restoration complete! Your data has been successfully replaced.");
-                    setView('invoicesList');
-                } catch (error) {
-                    console.error("Data import/restore error:", error);
-                    alertMessage("Import Error", `Failed to import data: ${error.message || "Invalid JSON file or structure."}`);
-                } finally {
-                    showLoading(false);
-                    event.target.value = null; // Clear input
-                }
-            };
-            reader.readAsText(file);
+        if(t==='reset') {
+            toggleLoader(true);
+            const inv = await getDocs(collection(db, "invoices")); inv.forEach(d => deleteDoc(d.ref));
+            const exp = await getDocs(collection(db, "expenses")); exp.forEach(d => deleteDoc(d.ref));
+            const items = await getDocs(collection(db, "inventory")); items.forEach(d => deleteDoc(d.ref));
+            alert("Factory Reset Complete"); location.reload();
         }
 
-        async function restoreData(newItems, newInvoices) {
-            const batch = writeBatch(db);
-            const itemsPath = getUserCollectionPath('items');
-            const invoicesPath = getUserCollectionPath('invoices');
-            
-            // 1. DELETE existing data
-            const existingItems = await getDocs(collection(db, itemsPath));
-            existingItems.docs.forEach(doc => {
-                batch.delete(doc.ref);
-            });
+    } catch(e){ alert("Wrong Password or Error: " + e.message); } 
+};
 
-            const existingInvoices = await getDocs(collection(db, invoicesPath));
-            existingInvoices.docs.forEach(doc => {
-                batch.delete(doc.ref);
-            });
-
-            // 2. ADD new items (Firestore will auto-generate new IDs)
-            newItems.forEach(item => {
-                const newDocRef = doc(collection(db, itemsPath)); 
-                batch.set(newDocRef, item);
-            });
-
-            // 3. ADD new invoices (Firestore will auto-generate new IDs)
-            newInvoices.forEach(invoice => {
-                const newDocRef = doc(collection(db, invoicesPath));
-                batch.set(newDocRef, invoice);
-            });
-
-            // 4. Commit the batch
-            await batch.commit();
-        }
-
-
-        // Expose functions globally for inline HTML event handlers
-        window.addRow = addRow;
-        window.deleteRow = deleteRow;
-        window.saveItem = saveItem;
-        window.deleteItem = deleteItem;
-        window.setView = setView;
-        window.saveInvoice = saveInvoice;
-        window.viewInvoiceDetails = viewInvoiceDetails;
-        window.printSavedInvoice = printSavedInvoice; // NEW
-        window.handleLogin = handleLogin;
-        window.handleLogout = handleLogout;
-        window.lookupRate = lookupRate; 
-        window.calculateRowTotal = calculateRowTotal; 
-        window.exportData = exportData;
-        window.handleImport = handleImport;
-
-        // --- INITIAL RUN ---
-        setInvoiceDate();
-        setReceiptNumber();
-        // The rest is handled by onAuthStateChanged
-    </script>
-
+window.filterInventory = () => { const t=document.getElementById('inventory-search').value.toLowerCase(); document.querySelectorAll('#inventory-table-body tr').forEach(r=>r.style.display=r.innerText.toLowerCase().includes(t)?'':'none'); };
+window.filterSavedInvoices = () => { const t=document.getElementById('search-invoice').value.toLowerCase(); document.querySelectorAll('.inv-row').forEach(r=>r.style.display=r.innerText.toLowerCase().includes(t)?'':'none'); };
+function toggleLoader(s){document.getElementById('loader').style.display=s?'flex':'none';}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
