@@ -11,50 +11,61 @@
         :root { --primary-bg: #f8f9fa; --sidebar-bg: #212529; --accent-color: #0d6efd; }
         body { background-color: var(--primary-bg); font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
         
-        /* Sidebar */
         .sidebar { min-height: 100vh; background: var(--sidebar-bg); color: #babbbc; transition: all 0.3s; }
         .sidebar .nav-link { color: #babbbc; padding: 15px 20px; font-weight: 500; border-left: 4px solid transparent; cursor: pointer; }
         .sidebar .nav-link:hover { color: #fff; background: rgba(255,255,255,0.05); }
         .sidebar .nav-link.active { color: #fff; background: rgba(13, 110, 253, 0.1); border-left-color: var(--accent-color); }
         .sidebar i { width: 25px; text-align: center; margin-right: 10px; }
 
-        /* Dashboard Cards */
         .card { border: none; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); background: #fff; }
         .stat-card { padding: 25px; position: relative; overflow: hidden; }
         .stat-card .icon-box { width: 50px; height: 50px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 15px; }
         .stat-card h3 { font-size: 28px; font-weight: 700; margin-bottom: 5px; color: #333; }
         .stat-card p { margin: 0; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #777; }
         
-        /* User Bar */
         .user-bar { background: white; padding: 10px 20px; border-bottom: 1px solid #e9ecef; display: flex; justify-content: flex-end; align-items: center; margin-bottom: 20px; border-radius: 0 0 10px 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
         .user-badge { background: #eef2f7; padding: 5px 15px; border-radius: 20px; color: #555; font-size: 0.9rem; font-weight: 600; }
 
-        /* Colors */
         .bg-soft-primary { background-color: rgba(13, 110, 253, 0.1); color: #0d6efd; }
         .bg-soft-success { background-color: rgba(25, 135, 84, 0.1); color: #198754; }
         .bg-soft-danger { background-color: rgba(220, 53, 69, 0.1); color: #dc3545; }
         .bg-soft-warning { background-color: rgba(255, 193, 7, 0.1); color: #ffc107; }
 
-        /* Print Styles - FIXED */
+        /* Print Styles */
         #printable-container { display: none; }
+        
+        .invoice-layout { padding: 40px; background: white; color: #000; font-family: 'Helvetica', sans-serif; width: 100%; max-width: 800px; margin: 0 auto; box-sizing: border-box; }
+        .invoice-layout h1 { font-size: 28px; font-weight: 800; margin: 0; text-transform: uppercase; }
+        .invoice-layout p { margin: 2px 0; font-size: 14px; color: #333; }
+        
+        .meta { display: flex; justify-content: space-between; margin-top: 30px; margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 10px; }
+        .meta h4 { font-size: 12px; font-weight: bold; text-transform: uppercase; color: #666; margin-bottom: 5px; border-bottom: 1px solid #eee; display: inline-block; padding-bottom: 2px; }
+        
+        .invoice-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 12px; }
+        .invoice-table th { border-bottom: 2px solid #000; padding: 8px 5px; font-weight: bold; text-transform: uppercase; }
+        .invoice-table td { border-bottom: 1px solid #eee; padding: 8px 5px; vertical-align: middle; }
+        
+        .invoice-footer { margin-top: 50px; padding-top: 10px; border-top: 1px dashed #999; text-align: center; font-size: 11px; font-style: italic; }
+
         @media print {
-            body > * { display: none !important; }
-            .modal, .modal-backdrop { display: none !important; }
-            #printable-container { display: block !important; position: absolute; left: 0; top: 0; width: 100%; background: white; color: #000; padding: 25px; }
+            body * { visibility: hidden; }
+            #printable-container, #printable-container * { visibility: visible; }
+            #printable-container { display: block !important; position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0; }
+            .modal-backdrop { display: none; }
+            .invoice-layout { width: 100%; max-width: 100%; padding: 20px; }
+
+            /* --- ALIGNMENT FIXES --- */
+            /* Force Column 1 (Item) to Left */
+            .invoice-table th:nth-child(1), .invoice-table td:nth-child(1) { text-align: left !important; }
             
-            .print-header { border-bottom: 2px solid #333; margin-bottom: 20px; padding-bottom: 15px; }
-            .print-header h1 { font-size: 28px; font-weight: 800; margin: 0; text-transform: uppercase; color: #000; }
-            .print-header p { margin: 2px 0; font-size: 14px; color: #333; }
+            /* Force Column 2 (Qty) to Center */
+            .invoice-table th:nth-child(2), .invoice-table td:nth-child(2) { text-align: center !important; }
             
-            .invoice-meta { display: flex; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-            .invoice-meta .box { width: 48%; }
-            .invoice-meta h4 { font-size: 14px; font-weight: bold; text-transform: uppercase; color: #555; border-bottom: 1px solid #ddd; margin-bottom: 5px; }
+            /* Force Column 3 (Rate) to Right */
+            .invoice-table th:nth-child(3), .invoice-table td:nth-child(3) { text-align: right !important; }
             
-            .print-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 12px; }
-            .print-table th { border-bottom: 2px solid #000; text-align: left; padding: 8px 5px; font-weight: bold; text-transform: uppercase; }
-            .print-table td { border-bottom: 1px solid #ddd; padding: 6px 5px; }
-            
-            .print-footer { margin-top: 40px; padding-top: 10px; border-top: 1px dashed #999; text-align: center; font-size: 11px; font-style: italic; color: #333; }
+            /* Force Column 4 (Total) to Right */
+            .invoice-table th:nth-child(4), .invoice-table td:nth-child(4) { text-align: right !important; }
         }
 
         #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 9999; display: none; justify-content: center; align-items: center; flex-direction: column; }
@@ -62,10 +73,7 @@
 </head>
 <body>
 
-<div id="loader">
-    <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;"></div>
-    <h5 class="mt-3 text-muted">Zimam Pharma...</h5>
-</div>
+<div id="loader"><div class="spinner-border text-primary" style="width: 3rem; height: 3rem;"></div><h5 class="mt-3 text-muted">Zimam Pharma...</h5></div>
 
 <div id="printable-container"></div>
 
@@ -77,19 +85,10 @@
                 <h3>Zimam Pharma</h3>
                 <p class="text-muted">Admin Login</p>
                 <form id="login-form" class="text-start">
-                    <div class="mb-3">
-                        <label class="form-label">Email</label>
-                        <input type="email" id="login-email" class="form-control" required>
-                    </div>
-                    <div class="mb-4">
-                        <label class="form-label">Password</label>
-                        <input type="password" id="login-password" class="form-control" required>
-                    </div>
+                    <div class="mb-3"><label class="form-label">Email</label><input type="email" id="login-email" class="form-control" required></div>
+                    <div class="mb-4"><label class="form-label">Password</label><input type="password" id="login-password" class="form-control" required></div>
                     <button type="submit" class="btn btn-primary w-100 fw-bold">Login</button>
-                    
-                    <div class="text-center mt-4">
-                        <small class="text-muted" style="font-size: 0.8rem;">Developed By <strong>Foyaz Chowdhury</strong></small>
-                    </div>
+                    <div class="text-center mt-4"><small class="text-muted" style="font-size: 0.8rem;">Developed By <strong>Foyaz Chowdhury</strong></small></div>
                 </form>
             </div>
         </div>
@@ -115,14 +114,7 @@
         </div>
 
         <div class="col-md-10" style="height: 100vh; overflow-y: auto; background-color: #f4f6f9;">
-            
-            <div class="user-bar">
-                <div class="user-badge">
-                    <i class="fas fa-user-circle me-2 text-primary"></i>
-                    Logged in as: <span id="user-email-display">...</span>
-                </div>
-            </div>
-
+            <div class="user-bar"><div class="user-badge"><i class="fas fa-user-circle me-2 text-primary"></i>Logged in as: <span id="user-email-display">...</span></div></div>
             <div class="p-4">
                 <div id="dashboard" class="content-tab">
                     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -254,7 +246,20 @@
 </div>
 
 <div class="modal fade" id="authModal" tabindex="-1"><div class="modal-dialog modal-sm"><div class="modal-content"><div class="modal-header"><h5>Security</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><input type="password" id="auth-check-pass" class="form-control" placeholder="Password"><input type="hidden" id="auth-action-type"><input type="hidden" id="auth-action-id"></div><div class="modal-footer"><button class="btn btn-dark w-100" onclick="performAuthAction()">Verify</button></div></div></div></div>
-<div class="modal fade" id="printModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header d-print-none"><h5 class="modal-title">Preview</h5><button class="btn btn-primary ms-auto" onclick="window.print()">Print</button></div><div class="modal-body" id="preview-area"></div></div></div></div>
+
+<div class="modal fade" id="printModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header d-print-none">
+                <h5 class="modal-title">Invoice Preview</h5>
+                <div>
+                    <button class="btn btn-primary" onclick="window.print()"><i class="fas fa-print"></i> Print</button>
+                </div>
+            </div>
+            <div class="modal-body" id="preview-area"></div>
+        </div>
+    </div>
+</div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
@@ -266,8 +271,8 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 let currentUser = null, currentDraftItems = [], finalizeItems = [], currentFinalizeId = null;
+let currentInvoiceNum = ""; // Store for PDF name
 
-// Auth
 document.getElementById('login-form').addEventListener('submit', (e) => { e.preventDefault(); toggleLoader(true); signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-password').value).then(() => toggleLoader(false)).catch(err => { alert(err.message); toggleLoader(false); }); });
 onAuthStateChanged(auth, (user) => {
     currentUser = user;
@@ -323,20 +328,11 @@ async function loadInventory() {
     const snap = await getDocs(collection(db, "inventory"));
     const list = document.getElementById('inv-item-helper'); const tbody = document.getElementById('inventory-table-body');
     list.innerHTML='<option selected disabled>Select from Inventory</option>'; tbody.innerHTML='';
-    
-    // Process items to array for sorting
-    let items=[]; 
-    snap.forEach(d => items.push({ id: d.id, ...d.data() }));
+    let items=[]; snap.forEach(d => items.push({ id: d.id, ...d.data() }));
     items.sort((a, b) => a.name.localeCompare(b.name));
-
     items.forEach(n => {
         list.innerHTML += `<option value="${n.name}">${n.name}</option>`;
-        tbody.innerHTML += `
-        <tr>
-            <td>${n.name}</td>
-            <td><span class="badge bg-success">Active</span></td>
-            <td><button class="btn btn-sm btn-outline-danger" onclick="requestAuth('delete_inventory', '${n.id}')"><i class="fas fa-trash"></i></button></td>
-        </tr>`;
+        tbody.innerHTML += `<tr><td>${n.name}</td><td><span class="badge bg-success">Active</span></td><td><button class="btn btn-sm btn-outline-danger" onclick="requestAuth('delete_inventory', '${n.id}')"><i class="fas fa-trash"></i></button></td></tr>`;
     });
 }
 window.addManualInventory = async () => {
@@ -391,20 +387,16 @@ function renderFinalize(){
 window.confirmFinalize = async () => {
     if(finalizeItems.some(x=>!x.sellingRate)) return alert("Enter all rates");
     toggleLoader(true);
-    
-    // SMART INVENTORY LOGIC
     const invSnap = await getDocs(collection(db, "inventory"));
     const existingNames = new Set();
     invSnap.forEach(d => existingNames.add(d.data().name.trim().toLowerCase()));
-
     for(const item of finalizeItems) {
         const cleanName = item.item.trim();
         if (!existingNames.has(cleanName.toLowerCase())) {
             await addDoc(collection(db, "inventory"), { name: cleanName });
-            existingNames.add(cleanName.toLowerCase()); // Add to set to prevent dupes in same invoice
+            existingNames.add(cleanName.toLowerCase());
         }
     }
-
     await updateDoc(doc(db,"invoices",currentFinalizeId), {status:'final', items:finalizeItems, finalizedAt:new Date(), invoiceNum:"INV-"+Date.now().toString().slice(-6), paidAmount:0});
     bootstrap.Modal.getInstance(document.getElementById('finalizeModal')).hide();
     loadDrafts(); loadInventory(); triggerDashboardLoad(); toggleLoader(false); alert("Finalized");
@@ -416,20 +408,7 @@ async function loadSavedInvoices() {
     let d=[]; snap.forEach(x=>d.push({id:x.id, ...x.data()})); d.sort((a,b)=>b.finalizedAt-a.finalizedAt);
     d.forEach(x=>{
         let t=0; x.items.forEach(i=>t+=i.qty*i.sellingRate); const p=x.paidAmount||0;
-        tb.innerHTML+=`
-        <tr class="inv-row">
-            <td>${x.invoiceNum}</td>
-            <td>${x.finalizedAt.toDate().toLocaleDateString()}</td>
-            <td>${x.shop}</td>
-            <td>${t.toFixed(2)}</td>
-            <td class="text-success">${p.toFixed(2)}</td>
-            <td class="text-danger fw-bold">${(t-p).toFixed(2)}</td>
-            <td>
-                <button class="btn btn-sm btn-info" onclick="printView('${x.id}')"><i class="fas fa-print"></i></button> 
-                <button class="btn btn-sm btn-success" onclick="openPay('${x.id}','${x.invoiceNum}',${t-p})"><i class="fas fa-dollar-sign"></i></button>
-                <button class="btn btn-sm btn-danger" onclick="requestAuth('delete_invoice', '${x.id}')"><i class="fas fa-trash"></i></button>
-            </td>
-        </tr>`;
+        tb.innerHTML+=`<tr class="inv-row"><td>${x.invoiceNum}</td><td>${x.finalizedAt.toDate().toLocaleDateString()}</td><td>${x.shop}</td><td>${t.toFixed(2)}</td><td class="text-success">${p.toFixed(2)}</td><td class="text-danger fw-bold">${(t-p).toFixed(2)}</td><td><button class="btn btn-sm btn-info" onclick="printView('${x.id}')"><i class="fas fa-print"></i></button> <button class="btn btn-sm btn-success" onclick="openPay('${x.id}','${x.invoiceNum}',${t-p})"><i class="fas fa-dollar-sign"></i></button> <button class="btn btn-sm btn-danger" onclick="requestAuth('delete_invoice', '${x.id}')"><i class="fas fa-trash"></i></button></td></tr>`;
     });
 }
 
@@ -447,102 +426,57 @@ window.saveExpense = async () => {
 async function loadExpenses() {
     const snap = await getDocs(query(collection(db,"expenses"), orderBy("date","desc")));
     const tb=document.getElementById('expense-list'); tb.innerHTML='';
-    snap.forEach(d=>tb.innerHTML+=`
-    <tr>
-        <td>${d.data().date.toDate().toLocaleDateString()}</td>
-        <td>${d.data().description}</td>
-        <td>${d.data().amount}</td>
-        <td><button class="btn btn-sm btn-outline-danger" onclick="requestAuth('delete_expense', '${d.id}')"><i class="fas fa-trash"></i></button></td>
-    </tr>`);
+    snap.forEach(d=>tb.innerHTML+=`<tr><td>${d.data().date.toDate().toLocaleDateString()}</td><td>${d.data().description}</td><td>${d.data().amount}</td><td><button class="btn btn-sm btn-outline-danger" onclick="requestAuth('delete_expense', '${d.id}')"><i class="fas fa-trash"></i></button></td></tr>`);
 }
 
-// --- UPDATED PRINT VIEW ---
+// --- UPDATED PRINT VIEW Logic ---
 window.printView = async (id) => {
     const d=(await getDoc(doc(db,"invoices",id))).data();
     const s=(await getDoc(doc(db,"settings","config"))).data()||{name:"Zimam Pharma"};
+    
     let r='', t=0; 
-    
-    // Robust date handling
-    let dateStr = "N/A";
-    if (d.finalizedAt) {
-        dateStr = d.finalizedAt.toDate ? d.finalizedAt.toDate().toLocaleDateString() : new Date(d.finalizedAt).toLocaleDateString();
-    }
-    
-    // Robust invoice num
-    let invNum = d.invoiceNum || "INV-GEN-" + id.substr(0,6).toUpperCase();
+    let dateStr = d.finalizedAt && d.finalizedAt.toDate ? d.finalizedAt.toDate().toLocaleDateString() : 'N/A';
+    let invNum = d.invoiceNum || "INV-"+id.substr(0,5);
+    currentInvoiceNum = invNum; 
 
     d.items.forEach(i=>{
-        let rowTot = (i.qty*i.sellingRate);
-        t+=rowTot; 
+        let rowTot = i.qty*i.sellingRate; t+=rowTot; 
         r+=`<tr>
             <td>${i.item}</td>
-            <td style="text-align:center">${i.qty}</td>
-            <td style="text-align:right">${i.sellingRate.toFixed(2)}</td>
-            <td style="text-align:right">${rowTot.toFixed(2)}</td>
+            <td style="text-align:center;">${i.qty}</td>
+            <td style="text-align:right;">${i.sellingRate.toFixed(2)}</td>
+            <td style="text-align:right;">${rowTot.toFixed(2)}</td>
         </tr>`;
     });
-    
     const paid = d.paidAmount || 0;
     const due = t - paid;
 
-    document.getElementById('preview-area').innerHTML=`
-    <div class="p-3">
-        <h3>${s.name}</h3>
-        <p>${s.address||''} | ${s.phone||''}</p>
-        <hr>
-        <div class="d-flex justify-content-between mb-3">
-            <div><strong>Bill To:</strong><br>${d.shop}</div>
-            <div class="text-end"><strong>Inv #:</strong> ${invNum}<br><strong>Date:</strong> ${dateStr}</div>
-        </div>
-        <table class="table table-sm table-bordered">
-            <thead><tr class="table-light"><th>Item</th><th class="text-center">Qty</th><th class="text-end">Rate</th><th class="text-end">Total</th></tr></thead>
-            <tbody>${r}</tbody>
-        </table>
-        <div class="row">
-            <div class="col-6"></div>
-            <div class="col-6">
-                <table class="table table-sm">
-                    <tr><td>Total Amount:</td><td class="text-end fw-bold">${t.toFixed(2)}</td></tr>
-                    <tr><td>Paid:</td><td class="text-end text-success">${paid.toFixed(2)}</td></tr>
-                    <tr><td style="border-top:2px solid #000">Due:</td><td style="border-top:2px solid #000" class="text-end text-danger fw-bold">${due.toFixed(2)}</td></tr>
-                </table>
+    // Generated HTML for Print/PDF
+    const invoiceHTML = `
+        <div class="invoice-layout">
+            <div class="print-header"><h1>${s.name}</h1><p>${s.address||''} | ${s.phone||''}</p></div>
+            <div class="meta">
+                <div style="width:48%"><h4>Bill To</h4><p><strong>${d.shop}</strong></p></div>
+                <div style="width:48%; text-align:right"><h4>Invoice</h4><p>#: ${invNum}</p><p>Date: ${dateStr}</p></div>
             </div>
-        </div>
-        <div class="mt-4 text-center text-muted fst-italic small">${s.footer||''}</div>
-    </div>`;
-    
-    // Prepare Printable Version
-    document.getElementById('printable-container').innerHTML = `
-        <div class="print-header">
-            <h1>${s.name}</h1>
-            <p>${s.address||''} | ${s.phone||''}</p>
-        </div>
-        <div class="invoice-meta">
-            <div class="box">
-                <h4>Bill To</h4>
-                <p style="font-size:16px; font-weight:bold">${d.shop}</p>
-            </div>
-            <div class="box" style="text-align:right">
-                <h4>Invoice Details</h4>
-                <p><strong>#:</strong> ${invNum}</p>
-                <p><strong>Date:</strong> ${dateStr}</p>
-            </div>
-        </div>
-        <table class="print-table">
-            <thead><tr><th style="width:50%">Item</th><th style="text-align:center">Qty</th><th style="text-align:right">Rate</th><th style="text-align:right">Amount</th></tr></thead>
-            <tbody>${r.replace(/td/g, 'td style="border-bottom:1px solid #ddd"')}</tbody>
-        </table>
-        <div style="text-align:right; margin-top:20px">
-            <table style="width:40%; float:right; font-size:14px">
-                <tr><td>Total:</td><td style="font-weight:bold; text-align:right">${t.toFixed(2)}</td></tr>
-                <tr><td>Paid:</td><td style="text-align:right">${paid.toFixed(2)}</td></tr>
-                <tr><td style="border-top:2px solid #000; padding-top:5px"><strong>Due:</strong></td><td style="border-top:2px solid #000; padding-top:5px; font-weight:bold; text-align:right">${due.toFixed(2)}</td></tr>
+            <table class="invoice-table">
+                <thead><tr><th style="width:40%">Item</th><th style="width:20%;text-align:center">Qty</th><th style="width:20%;text-align:right">Rate</th><th style="width:20%;text-align:right">Total</th></tr></thead>
+                <tbody>${r.replace(/td/g, 'td style="border-bottom:1px solid #ddd"')}</tbody>
             </table>
-            <div style="clear:both"></div>
+            <div style="text-align:right; margin-top:20px">
+                <table style="width:50%; float:right; font-size:14px">
+                    <tr><td style="text-align:right; padding-right:10px">Total:</td><td style="text-align:right; font-weight:bold">${t.toFixed(2)}</td></tr>
+                    <tr><td style="text-align:right; padding-right:10px">Paid:</td><td style="text-align:right">${paid.toFixed(2)}</td></tr>
+                    <tr><td style="text-align:right; padding-right:10px; border-top:2px solid #000">Due:</td><td style="text-align:right; font-weight:bold; border-top:2px solid #000">${due.toFixed(2)}</td></tr>
+                </table>
+                <div style="clear:both"></div>
+            </div>
+            <div class="invoice-footer">${s.footer||''}</div>
         </div>
-        <div class="print-footer">${s.footer||''}</div>
     `;
-    
+
+    document.getElementById('printable-container').innerHTML = invoiceHTML;
+    document.getElementById('preview-area').innerHTML = `<div style="border:1px solid #eee; padding:10px; transform:scale(0.9)">${invoiceHTML}</div>`;
     new bootstrap.Modal(document.getElementById('printModal')).show();
 };
 
@@ -571,33 +505,10 @@ window.performAuthAction = async () => {
         bootstrap.Modal.getInstance(document.getElementById('authModal')).hide(); 
         
         if(t==='settings'){document.getElementById('settings-lock').classList.add('d-none');document.getElementById('settings-content').classList.remove('d-none');}
-        
-        if(t==='delete_invoice') {
-            await deleteDoc(doc(db, "invoices", id));
-            loadSavedInvoices(); triggerDashboardLoad();
-            alert("Invoice Deleted");
-        }
-        
-        if(t==='delete_expense') {
-            await deleteDoc(doc(db, "expenses", id));
-            loadExpenses(); triggerDashboardLoad();
-            alert("Expense Deleted");
-        }
-
-        if(t==='delete_inventory') {
-            await deleteDoc(doc(db, "inventory", id));
-            loadInventory();
-            alert("Item Deleted from Inventory");
-        }
-
-        if(t==='reset') {
-            toggleLoader(true);
-            const inv = await getDocs(collection(db, "invoices")); inv.forEach(d => deleteDoc(d.ref));
-            const exp = await getDocs(collection(db, "expenses")); exp.forEach(d => deleteDoc(d.ref));
-            const items = await getDocs(collection(db, "inventory")); items.forEach(d => deleteDoc(d.ref));
-            alert("Factory Reset Complete"); location.reload();
-        }
-
+        if(t==='delete_invoice') { await deleteDoc(doc(db, "invoices", id)); loadSavedInvoices(); triggerDashboardLoad(); alert("Invoice Deleted"); }
+        if(t==='delete_expense') { await deleteDoc(doc(db, "expenses", id)); loadExpenses(); triggerDashboardLoad(); alert("Expense Deleted"); }
+        if(t==='delete_inventory') { await deleteDoc(doc(db, "inventory", id)); loadInventory(); alert("Item Deleted"); }
+        if(t==='reset') { toggleLoader(true); const inv = await getDocs(collection(db, "invoices")); inv.forEach(d => deleteDoc(d.ref)); const exp = await getDocs(collection(db, "expenses")); exp.forEach(d => deleteDoc(d.ref)); const items = await getDocs(collection(db, "inventory")); items.forEach(d => deleteDoc(d.ref)); alert("Reset Complete"); location.reload(); }
     } catch(e){ alert("Wrong Password or Error: " + e.message); } 
 };
 
