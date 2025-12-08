@@ -53,6 +53,16 @@
             #printable-container { display: block !important; position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0; }
             .modal-backdrop { display: none; }
             .invoice-layout { width: 100%; max-width: 100%; padding: 20px; }
+
+            /* --- STRICT ALIGNMENT FIX --- */
+            /* Column 1: Item (Left) */
+            .invoice-table th:nth-child(1), .invoice-table td:nth-child(1) { text-align: left !important; }
+            /* Column 2: Qty (Center) */
+            .invoice-table th:nth-child(2), .invoice-table td:nth-child(2) { text-align: center !important; }
+            /* Column 3: Rate (Right) */
+            .invoice-table th:nth-child(3), .invoice-table td:nth-child(3) { text-align: right !important; }
+            /* Column 4: Total (Right) */
+            .invoice-table th:nth-child(4), .invoice-table td:nth-child(4) { text-align: right !important; }
         }
 
         #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 9999; display: none; justify-content: center; align-items: center; flex-direction: column; }
@@ -424,7 +434,6 @@ window.printView = async (id) => {
     let r='', t=0; 
     let dateStr = d.finalizedAt && d.finalizedAt.toDate ? d.finalizedAt.toDate().toLocaleDateString() : 'N/A';
     let invNum = d.invoiceNum || "INV-"+id.substr(0,5);
-    currentInvoiceNum = invNum; 
 
     d.items.forEach(i=>{
         let rowTot = i.qty*i.sellingRate; t+=rowTot; 
@@ -479,7 +488,7 @@ window.generateStatement = async () => {
 async function loadSettings() { const d=(await getDoc(doc(db,"settings","config"))).data(); if(d){document.getElementById('set-name').value=d.name||''; document.getElementById('set-address').value=d.address||''; document.getElementById('set-phone').value=d.phone||''; document.getElementById('set-email').value=d.email||''; document.getElementById('set-footer').value=d.footer||'';}}
 document.getElementById('org-settings-form').addEventListener('submit',async(e)=>{e.preventDefault(); await setDoc(doc(db,"settings","config"),{name:document.getElementById('set-name').value, address:document.getElementById('set-address').value, phone:document.getElementById('set-phone').value, email:document.getElementById('set-email').value, footer:document.getElementById('set-footer').value}); alert("Saved");});
 
-// NEW ROBUST IMPORT FUNCTION
+window.backupData = async () => { const i=[],e=[],n=[]; (await getDocs(collection(db,"invoices"))).forEach(d=>i.push(d.data())); (await getDocs(collection(db,"expenses"))).forEach(d=>e.push(d.data())); (await getDocs(collection(db,"inventory"))).forEach(d=>n.push(d.data())); const b=new Blob([JSON.stringify({invoices:i,expenses:e,inventory:n})],{type:"application/json"}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download="backup.json"; a.click(); };
 window.importData = () => { 
     const fileInput = document.getElementById('import-file');
     const file = fileInput.files[0];
@@ -539,8 +548,6 @@ window.importData = () => {
     };
     reader.readAsText(file);
 };
-
-window.backupData = async () => { const i=[],e=[],n=[]; (await getDocs(collection(db,"invoices"))).forEach(d=>i.push(d.data())); (await getDocs(collection(db,"expenses"))).forEach(d=>e.push(d.data())); (await getDocs(collection(db,"inventory"))).forEach(d=>n.push(d.data())); const b=new Blob([JSON.stringify({invoices:i,expenses:e,inventory:n})],{type:"application/json"}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download="backup.json"; a.click(); };
 
 // Security
 window.requestAuth = (t,id) => { document.getElementById('auth-action-type').value=t; document.getElementById('auth-action-id').value=id||''; new bootstrap.Modal(document.getElementById('authModal')).show(); };
