@@ -3,89 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zimam Pharma - Supply Management</title>
+    <title>Management System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        :root { --primary-bg: #f8f9fa; --sidebar-bg: #212529; --accent-color: #0d6efd; }
-        body { background-color: var(--primary-bg); font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+        :root { --primary-bg: #f0f2f5; --sidebar-bg: #1c1e21; --accent-color: #0d6efd; }
+        body { background-color: var(--primary-bg); font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 0.95rem; }
         
-        .sidebar { min-height: 100vh; background: var(--sidebar-bg); color: #babbbc; transition: all 0.3s; }
-        .sidebar .nav-link { color: #babbbc; padding: 15px 20px; font-weight: 500; border-left: 4px solid transparent; cursor: pointer; }
-        .sidebar .nav-link:hover { color: #fff; background: rgba(255,255,255,0.05); }
-        .sidebar .nav-link.active { color: #fff; background: rgba(13, 110, 253, 0.1); border-left-color: var(--accent-color); }
-        .sidebar i { width: 25px; text-align: center; margin-right: 10px; }
+        /* Mobile & Sidebar */
+        .sidebar { min-height: 100vh; background: var(--sidebar-bg); color: #b0b3b8; transition: transform 0.3s ease; z-index: 1000; }
+        .sidebar .nav-link { color: #b0b3b8; padding: 12px 20px; font-weight: 500; border-left: 4px solid transparent; }
+        .sidebar .nav-link:hover { color: #e4e6eb; background: rgba(255,255,255,0.05); }
+        .sidebar .nav-link.active { color: #fff; background: rgba(13, 110, 253, 0.15); border-left-color: var(--accent-color); }
+        
+        @media (max-width: 768px) {
+            .sidebar { position: fixed; top: 0; left: 0; height: 100%; width: 250px; transform: translateX(-100%); }
+            .sidebar.show { transform: translateX(0); }
+            .mobile-header { display: flex !important; }
+        }
+        .mobile-header { display: none; background: #fff; padding: 10px 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); align-items: center; justify-content: space-between; margin-bottom: 20px; }
 
-        .card { border: none; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); background: #fff; }
+        /* UI Elements */
+        .card { border: none; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); background: #fff; margin-bottom: 20px; }
         .stat-card { padding: 25px; position: relative; overflow: hidden; }
         .stat-card .icon-box { width: 50px; height: 50px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 15px; }
         .stat-card h3 { font-size: 28px; font-weight: 700; margin-bottom: 5px; color: #333; }
-        .stat-card p { margin: 0; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #777; }
+        .stat-card p { margin: 0; font-size: 14px; font-weight: 600; text-transform: uppercase; color: #777; }
         
-        .user-bar { background: white; padding: 10px 20px; border-bottom: 1px solid #e9ecef; display: flex; justify-content: flex-end; align-items: center; margin-bottom: 20px; border-radius: 0 0 10px 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
-        .user-badge { background: #eef2f7; padding: 5px 15px; border-radius: 20px; color: #555; font-size: 0.9rem; font-weight: 600; }
+        .user-bar { background: white; padding: 10px 20px; border-bottom: 1px solid #e9ecef; display: flex; justify-content: flex-end; align-items: center; border-radius: 0 0 10px 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .user-badge { background: #eef2f7; padding: 5px 15px; border-radius: 20px; color: #555; font-size: 0.85rem; font-weight: 600; }
 
         .bg-soft-primary { background-color: rgba(13, 110, 253, 0.1); color: #0d6efd; }
         .bg-soft-success { background-color: rgba(25, 135, 84, 0.1); color: #198754; }
         .bg-soft-danger { background-color: rgba(220, 53, 69, 0.1); color: #dc3545; }
         .bg-soft-warning { background-color: rgba(255, 193, 7, 0.1); color: #ffc107; }
 
+        /* Tables */
+        .table thead th { background-color: #f8f9fa; border-bottom: 2px solid #e9ecef; color: #495057; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; }
+        .table tbody td { vertical-align: middle; font-size: 0.9rem; color: #333; }
+        
         /* Print Styles */
-        #printable-container { display: none; }
+        #printable-container, #printable-statement-container { display: none; }
         
-        .invoice-layout { padding: 40px; background: white; color: #000; font-family: 'Helvetica', sans-serif; width: 100%; max-width: 800px; margin: 0 auto; box-sizing: border-box; }
-        .invoice-layout h1 { font-size: 28px; font-weight: 800; margin: 0; text-transform: uppercase; }
-        .invoice-layout p { margin: 2px 0; font-size: 14px; color: #333; }
-        
-        .meta { display: flex; justify-content: space-between; margin-top: 30px; margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 10px; }
-        .meta h4 { font-size: 12px; font-weight: bold; text-transform: uppercase; color: #666; margin-bottom: 5px; border-bottom: 1px solid #eee; display: inline-block; padding-bottom: 2px; }
-        
-        .invoice-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 12px; }
-        .invoice-table th { border-bottom: 2px solid #000; text-align: left; padding: 8px 5px; font-weight: bold; text-transform: uppercase; }
-        .invoice-table td { border-bottom: 1px solid #eee; padding: 8px 5px; vertical-align: middle; }
-        
-        .invoice-footer { margin-top: 50px; padding-top: 10px; border-top: 1px dashed #999; text-align: center; font-size: 11px; font-style: italic; }
+        /* Statement Print */
+        .stmt-print-layout { background: white; color: #000; font-family: 'Times New Roman', Times, serif; padding: 40px; max-width: 900px; margin: 0 auto; }
+        .stmt-header { text-align: center; margin-bottom: 30px; }
+        .stmt-header h1 { font-size: 26px; font-weight: bold; margin: 0; text-transform: uppercase; }
+        .stmt-title { text-align: center; margin: 20px 0; border-top: 2px solid #000; padding-top: 10px; }
+        .stmt-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 20px; }
+        .stmt-table th, .stmt-table td { border: 1px solid #ccc; padding: 8px; }
+        .stmt-table th { background-color: #f2f2f2; font-weight: bold; text-align: center; }
+        .stmt-footer-summary { margin-top: 30px; display: flex; justify-content: center; gap: 30px; font-weight: bold; font-size: 14px; }
+
+        /* Invoice Print */
+        .invoice-layout { padding: 40px; background: white; color: #000; font-family: 'Helvetica', sans-serif; }
+        .invoice-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 12px; }
+        .invoice-table th { border-bottom: 2px solid #000; text-align: left; padding: 8px; }
+        .invoice-table td { border-bottom: 1px solid #eee; padding: 8px; }
+        .print-header-table { width: 100%; margin-top: 30px; margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 10px; }
+        .print-header-table td { vertical-align: top; }
 
         @media print {
             body * { visibility: hidden; }
-            #printable-container, #printable-container * { visibility: visible; }
-            #printable-container { display: block !important; position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0; }
+            .print-mode-invoice #printable-container, .print-mode-invoice #printable-container * { visibility: visible; }
+            .print-mode-invoice #printable-container { display: block !important; position: absolute; left: 0; top: 0; width: 100%; }
+            .print-mode-statement #printable-statement-container, .print-mode-statement #printable-statement-container * { visibility: visible; }
+            .print-mode-statement #printable-statement-container { display: block !important; position: absolute; left: 0; top: 0; width: 100%; }
             .modal-backdrop { display: none; }
-            .invoice-layout { width: 100%; max-width: 100%; padding: 20px; }
-
-            /* --- STRICT ALIGNMENT FIX --- */
-            /* Column 1: Item (Left) */
-            .invoice-table th:nth-child(1), .invoice-table td:nth-child(1) { text-align: left !important; }
-            /* Column 2: Qty (Center) */
-            .invoice-table th:nth-child(2), .invoice-table td:nth-child(2) { text-align: center !important; }
-            /* Column 3: Rate (Right) */
-            .invoice-table th:nth-child(3), .invoice-table td:nth-child(3) { text-align: right !important; }
-            /* Column 4: Total (Right) */
-            .invoice-table th:nth-child(4), .invoice-table td:nth-child(4) { text-align: right !important; }
         }
 
         #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 9999; display: none; justify-content: center; align-items: center; flex-direction: column; }
     </style>
 </head>
-<body>
+<body class="">
 
-<div id="loader"><div class="spinner-border text-primary" style="width: 3rem; height: 3rem;"></div><h5 class="mt-3 text-muted">Zimam Pharma...</h5></div>
+<div id="loader"><div class="spinner-border text-primary" style="width: 3rem; height: 3rem;"></div><h5 class="mt-3 text-muted">Loading System...</h5></div>
 
 <div id="printable-container"></div>
+<div id="printable-statement-container"></div>
 
 <div id="auth-section" class="container mt-5">
     <div class="row justify-content-center">
-        <div class="col-md-4">
+        <div class="col-md-5 col-lg-4">
             <div class="card p-5 mt-5 text-center">
                 <i class="fas fa-clinic-medical fa-4x text-primary mb-3"></i>
-                <h3>Zimam Pharma</h3>
-                <p class="text-muted">Admin Login</p>
+                <h3 id="login-org-name">Medical Management</h3>
+                <p class="text-muted">Secure Management Login</p>
                 <form id="login-form" class="text-start">
                     <div class="mb-3"><label class="form-label">Email</label><input type="email" id="login-email" class="form-control" required></div>
                     <div class="mb-4"><label class="form-label">Password</label><input type="password" id="login-password" class="form-control" required></div>
                     <button type="submit" class="btn btn-primary w-100 fw-bold">Login</button>
-                    <div class="text-center mt-4"><small class="text-muted" style="font-size: 0.8rem;">Developed By <strong>Foyaz Chowdhury</strong></small></div>
+                    <div class="text-center mt-4"><small class="text-muted">System v2.7 | 't' Removed</small></div>
                 </form>
             </div>
         </div>
@@ -93,16 +102,22 @@
 </div>
 
 <div id="app-section" class="container-fluid d-none">
+    <div class="mobile-header d-md-none">
+        <span class="fw-bold"><i class="fas fa-clinic-medical text-primary me-2"></i><span id="org-brand-mobile">Loading...</span></span>
+        <button class="btn btn-outline-dark btn-sm" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+    </div>
+
     <div class="row">
-        <div class="col-md-2 sidebar p-0 d-print-none">
-            <div class="p-4 border-bottom border-secondary">
-                <h5 class="mb-0 text-white"><i class="fas fa-pills me-2"></i>Zimam Pharma</h5>
+        <div class="col-md-2 sidebar p-0" id="sidebar-nav">
+            <div class="p-4 border-bottom border-secondary d-none d-md-block">
+                <h5 class="mb-0 text-white"><i class="fas fa-pills me-2"></i><span id="org-brand-sidebar">Loading...</span></h5>
             </div>
+            <div class="p-3 d-md-none text-end"><button class="btn btn-sm btn-light" onclick="toggleSidebar()">Close</button></div>
             <ul class="nav flex-column mt-3">
                 <li class="nav-item"><a class="nav-link active" onclick="showTab('dashboard')"><i class="fas fa-th-large"></i> Dashboard</a></li>
                 <li class="nav-item"><a class="nav-link" onclick="showTab('new-invoice')"><i class="fas fa-file-invoice-dollar"></i> New Invoice</a></li>
                 <li class="nav-item"><a class="nav-link" onclick="showTab('inventory')"><i class="fas fa-boxes"></i> Inventory</a></li>
-                <li class="nav-item"><a class="nav-link" onclick="showTab('saved-invoices')"><i class="fas fa-history"></i> Saved Invoices</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="showTab('saved-invoices')"><i class="fas fa-history"></i> Invoices List</a></li>
                 <li class="nav-item"><a class="nav-link" onclick="showTab('expenses')"><i class="fas fa-wallet"></i> Expenses</a></li>
                 <li class="nav-item"><a class="nav-link" onclick="showTab('statement')"><i class="fas fa-chart-line"></i> Statement</a></li>
                 <li class="nav-item"><a class="nav-link" onclick="showTab('settings')"><i class="fas fa-cog"></i> Settings</a></li>
@@ -110,9 +125,10 @@
             </ul>
         </div>
 
-        <div class="col-md-10" style="height: 100vh; overflow-y: auto; background-color: #f4f6f9;">
-            <div class="user-bar"><div class="user-badge"><i class="fas fa-user-circle me-2 text-primary"></i>Logged in as: <span id="user-email-display">...</span></div></div>
-            <div class="p-4">
+        <div class="col-md-10 main-content" style="height: 100vh; overflow-y: auto; background-color: #f4f6f9;">
+            <div class="user-bar d-none d-md-flex"><div class="user-badge"><i class="fas fa-user-circle me-2 text-primary"></i><span id="user-email-display">...</span></div></div>
+            
+            <div class="p-3 p-md-4">
                 <div id="dashboard" class="content-tab">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h3>Dashboard Overview</h3>
@@ -155,41 +171,48 @@
                 <div id="new-invoice" class="content-tab d-none">
                     <h3>New Invoice</h3><hr>
                     <div class="card p-4">
-                        <div class="row mb-3"><div class="col-12"><input type="text" id="inv-shop" class="form-control" placeholder="Shop Name"></div></div>
+                        <div class="row mb-3"><div class="col-12"><input type="text" id="inv-shop" class="form-control" placeholder="Customer / Shop Name"></div></div>
                         <div class="row bg-light p-3 rounded align-items-end g-2">
                             <div class="col-md-4">
                                 <input type="text" id="inv-item" class="form-control" placeholder="Item Name">
-                                <select id="inv-item-helper" class="form-select mt-1" onchange="document.getElementById('inv-item').value=this.value"><option selected disabled>Select from Inventory</option></select>
+                                <select id="inv-item-helper" class="form-select mt-1 form-select-sm" onchange="document.getElementById('inv-item').value=this.value"><option selected disabled>Select...</option></select>
                             </div>
-                            <div class="col-md-2"><input type="number" id="inv-qty" class="form-control" placeholder="Qty"></div>
-                            <div class="col-md-3"><input type="number" step="0.01" id="inv-buy-rate" class="form-control" placeholder="Buy Rate"></div>
-                            <div class="col-md-3"><button class="btn btn-secondary w-100" onclick="addItemToDraft()">Add Item</button></div>
+                            <div class="col-6 col-md-2"><input type="number" id="inv-qty" class="form-control" placeholder="Qty"></div>
+                            <div class="col-6 col-md-2"><input type="number" step="0.01" id="inv-buy-rate" class="form-control" placeholder="Buy Rate"></div>
+                            <div class="col-md-4"><button class="btn btn-secondary w-100" onclick="addItemToDraft()">Add Item</button></div>
                         </div>
-                        <div class="table-responsive mt-4"><table class="table table-bordered"><thead class="table-light"><tr><th>Item</th><th>Qty</th><th>Buy</th><th>Subtotal</th><th>Action</th></tr></thead><tbody id="temp-invoice-body"></tbody></table></div>
+                        <div class="table-responsive mt-4">
+                            <table class="table table-bordered table-sm"><thead class="table-light"><tr><th>S.N.</th><th>Item</th><th>Qty</th><th>Buy</th><th>Total</th><th>Action</th></tr></thead><tbody id="temp-invoice-body"></tbody></table>
+                        </div>
                         <div class="text-end mt-2"><button class="btn btn-primary" onclick="saveDraftInvoice()">Save Draft</button></div>
                     </div>
-                    <h4 class="mt-5">Drafts</h4>
-                    <div class="table-responsive"><table class="table table-hover bg-white shadow-sm"><thead class="table-dark"><tr><th>Date</th><th>Shop</th><th>Items</th><th>Action</th></tr></thead><tbody id="drafts-table-body"></tbody></table></div>
+                    <h5 class="mt-5">Drafts</h5>
+                    <div class="table-responsive"><table class="table table-hover bg-white shadow-sm align-middle"><thead class="table-dark"><tr><th>S.N.</th><th>Date</th><th>Shop</th><th>Items</th><th>Action</th></tr></thead><tbody id="drafts-table-body"></tbody></table></div>
                 </div>
 
                 <div id="inventory" class="content-tab d-none">
                     <h3>Inventory</h3><hr>
                     <div class="card p-3 bg-light mb-4">
-                        <div class="row g-2 align-items-end"><div class="col-9"><input type="text" id="manual-inv-name" class="form-control" placeholder="New Medicine Name"></div><div class="col-3"><button onclick="addManualInventory()" class="btn btn-success w-100">Add</button></div></div>
+                        <div class="row g-2 align-items-end"><div class="col-8 col-md-9"><input type="text" id="manual-inv-name" class="form-control" placeholder="New Medicine Name"></div><div class="col-4 col-md-3"><button onclick="addManualInventory()" class="btn btn-success w-100">Add</button></div></div>
                     </div>
-                    <input type="text" id="inventory-search" onkeyup="filterInventory()" class="form-control mb-3" placeholder="Search...">
+                    <input type="text" id="inventory-search" onkeyup="filterInventory()" class="form-control mb-3" placeholder="Search Inventory...">
                     <div class="table-responsive">
-                        <table class="table table-striped table-hover bg-white">
-                            <thead class="table-dark"><tr><th>Item Name</th><th>Status</th><th>Action</th></tr></thead>
+                        <table class="table table-striped table-hover bg-white align-middle">
+                            <thead class="table-dark"><tr><th width="10%">S.N.</th><th>Item Name</th><th>Status</th><th>Action</th></tr></thead>
                             <tbody id="inventory-table-body"></tbody>
                         </table>
                     </div>
                 </div>
 
                 <div id="saved-invoices" class="content-tab d-none">
-                    <h3>Saved Invoices</h3><hr>
-                    <input type="text" id="search-invoice" class="form-control mb-3" placeholder="Search..." onkeyup="filterSavedInvoices()">
-                    <div class="table-responsive"><table class="table table-striped bg-white shadow-sm align-middle"><thead class="table-dark"><tr><th>Inv #</th><th>Date</th><th>Shop</th><th>Total</th><th class="text-success">Paid</th><th class="text-danger">Due</th><th>Action</th></tr></thead><tbody id="saved-invoices-body"></tbody></table></div>
+                    <h3>Invoices List</h3><hr>
+                    <input type="text" id="search-invoice" class="form-control mb-3" placeholder="Search Invoices..." onkeyup="filterSavedInvoices()">
+                    <div class="table-responsive">
+                        <table class="table table-striped bg-white shadow-sm align-middle table-sm">
+                            <thead class="table-dark"><tr><th>S.N.</th><th>Inv #</th><th>Date</th><th>Shop</th><th>Total</th><th class="text-success">Paid</th><th class="text-danger">Due</th><th>Action</th></tr></thead>
+                            <tbody id="saved-invoices-body"></tbody>
+                        </table>
+                    </div>
                 </div>
 
                 <div id="expenses" class="content-tab d-none">
@@ -201,19 +224,79 @@
                             <div class="col-md-2"><button type="button" onclick="window.saveExpense()" class="btn btn-danger w-100">Add</button></div>
                         </div>
                     </div>
-                    <table class="table bg-white"><tbody id="expense-list"></tbody></table>
+                    <div class="table-responsive">
+                        <table class="table bg-white table-striped"><thead class="table-dark"><tr><th>S.N.</th><th>Date</th><th>Description</th><th>Amount</th><th>Action</th></tr></thead><tbody id="expense-list"></tbody></table>
+                    </div>
                 </div>
 
                 <div id="statement" class="content-tab d-none">
-                    <h3>Statement</h3><hr>
-                    <div class="card p-3 mb-4"><div class="row g-3 align-items-end"><div class="col-md-4"><label>Start</label><input type="date" id="st-start" class="form-control"></div><div class="col-md-4"><label>End</label><input type="date" id="st-end" class="form-control"></div><div class="col-md-4"><button onclick="generateStatement()" class="btn btn-primary w-100">Generate</button></div></div></div>
-                    <div id="statement-result" class="d-none"><div class="row text-center mb-3"><div class="col-md-4"><div class="alert alert-success">Sales: <strong id="st-sales">0</strong></div></div><div class="col-md-4"><div class="alert alert-warning">Exp: <strong id="st-expenses">0</strong></div></div><div class="col-md-4"><div class="alert alert-info">Net: <strong id="st-profit">0</strong></div></div></div><table class="table table-bordered bg-white"><tbody id="st-table"></tbody></table></div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3>Statement</h3>
+                        <button class="btn btn-outline-dark" onclick="printStatement()"><i class="fas fa-print"></i> Print Statement</button>
+                    </div><hr>
+                    <div class="card p-3 mb-4">
+                        <div class="row g-3 align-items-end">
+                            <div class="col-md-3"><label class="small text-muted">Start Date</label><input type="date" id="st-start" class="form-control"></div>
+                            <div class="col-md-3"><label class="small text-muted">End Date</label><input type="date" id="st-end" class="form-control"></div>
+                            <div class="col-md-3">
+                                <label class="small text-muted">Filter Type</label>
+                                <select id="st-filter" class="form-select">
+                                    <option value="all">All Transactions</option>
+                                    <option value="income">Income Only</option>
+                                    <option value="expense">Expense Only</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3"><button onclick="generateStatement()" class="btn btn-primary w-100">Generate View</button></div>
+                        </div>
+                    </div>
+                    <div id="statement-result" class="d-none">
+                        <div class="row text-center mb-3 g-2">
+                            <div class="col-6"><div class="p-2 bg-success bg-opacity-10 border border-success rounded"><small>Income</small><br><strong id="st-sales" class="text-success">0</strong></div></div>
+                            <div class="col-6"><div class="p-2 bg-danger bg-opacity-10 border border-danger rounded"><small>Expense</small><br><strong id="st-expenses" class="text-danger">0</strong></div></div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped bg-white table-sm">
+                                <thead class="table-dark text-center"><tr><th>S.N.</th><th>Date</th><th>Description</th><th>Type</th><th>Amount</th><th>Balance</th></tr></thead>
+                                <tbody id="st-table"></tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
 
                 <div id="settings" class="content-tab d-none">
                     <h3>Settings</h3><hr>
-                    <div id="settings-lock" class="text-center p-5 bg-white shadow-sm"><h4>Restricted</h4><button class="btn btn-dark mt-2" onclick="requestAuth('settings')">Unlock</button></div>
-                    <div id="settings-content" class="d-none"><div class="row"><div class="col-md-7"><div class="card p-4"><form id="org-settings-form"><div class="mb-3"><label>Name</label><input type="text" id="set-name" class="form-control"></div><div class="mb-3"><label>Address</label><input type="text" id="set-address" class="form-control"></div><div class="row"><div class="col-6"><input type="text" id="set-phone" class="form-control"></div><div class="col-6"><input type="email" id="set-email" class="form-control"></div></div><div class="mt-3"><textarea id="set-footer" class="form-control"></textarea></div><button type="submit" class="btn btn-success mt-3">Save</button></form></div></div><div class="col-md-5"><div class="card p-4 border-danger"><h5 class="text-danger">Danger Zone</h5><button onclick="requestAuth('reset')" class="btn btn-danger w-100 mt-2">Factory Reset</button></div><div class="card p-4 mt-3"><button onclick="backupData()" class="btn btn-outline-primary w-100 mb-3">Backup Data</button><div class="input-group"><input type="file" id="import-file" class="form-control"><button class="btn btn-primary" onclick="importData()">Import</button></div></div></div></div></div>
+                    <div id="settings-lock" class="text-center p-5 bg-white shadow-sm"><h4>Restricted Access</h4><p>Enter password to modify settings or backup data.</p><button class="btn btn-dark mt-2" onclick="requestAuth('settings')">Unlock</button></div>
+                    <div id="settings-content" class="d-none">
+                        <div class="row g-4">
+                            <div class="col-lg-7">
+                                <div class="card p-4">
+                                    <h5>Organization Details</h5>
+                                    <p class="small text-muted">This Name will appear on the top-left of the app.</p>
+                                    <form id="org-settings-form">
+                                        <div class="mb-3"><label>Organization Name</label><input type="text" id="set-name" class="form-control" placeholder="e.g. My Pharmacy"></div>
+                                        <div class="mb-3"><label>Address</label><input type="text" id="set-address" class="form-control"></div>
+                                        <div class="row mb-3"><div class="col-6"><label>Phone</label><input type="text" id="set-phone" class="form-control"></div><div class="col-6"><label>Email</label><input type="email" id="set-email" class="form-control"></div></div>
+                                        <div class="mb-3"><label>Footer Note (Invoice)</label><textarea id="set-footer" class="form-control"></textarea></div>
+                                        <button type="submit" class="btn btn-success">Save Config</button>
+                                    </form>
+                                </div>
+                            </div>
+                            <div class="col-lg-5">
+                                <div class="card p-4 mb-3">
+                                    <h5>Restore Data</h5>
+                                    <p class="text-danger small fw-bold">WARNING: Importing will DELETE all current data and replace it with backup data.</p>
+                                    <div class="input-group">
+                                        <input type="file" id="import-file" class="form-control">
+                                        <button class="btn btn-danger" onclick="importData()">Restore</button>
+                                    </div>
+                                </div>
+                                <div class="card p-4 border-danger">
+                                    <h5 class="text-danger">Danger Zone</h5>
+                                    <button onclick="requestAuth('reset')" class="btn btn-danger w-100">Factory Reset</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -228,16 +311,15 @@
             <div class="modal-header bg-primary text-white"><h5 class="modal-title">Finalize Invoice</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
             <div class="modal-body">
                 <h5 id="fin-shop-name"></h5>
-                <table class="table table-bordered">
-                    <thead class="table-light"><tr><th>Item</th><th>Qty</th><th>Buy</th><th>Sell</th><th>Total</th></tr></thead>
-                    <tbody id="finalize-table-body"></tbody>
-                    <tfoot><tr><td colspan="4" class="text-end fw-bold">Grand Total:</td><td id="fin-grand-total">0.00</td></tr></tfoot>
-                </table>
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="table-light"><tr><th>S.N.</th><th>Item</th><th>Qty</th><th>Buy</th><th>Sell Price</th><th>Total</th></tr></thead>
+                        <tbody id="finalize-table-body"></tbody>
+                        <tfoot><tr><td colspan="5" class="text-end fw-bold">Grand Total:</td><td id="fin-grand-total">0.00</td></tr></tfoot>
+                    </table>
+                </div>
             </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button class="btn btn-primary" onclick="window.confirmFinalize()">Finalize & Save</button>
-            </div>
+            <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary" onclick="window.confirmFinalize()">Finalize & Save</button></div>
         </div>
     </div>
 </div>
@@ -247,12 +329,7 @@
 <div class="modal fade" id="printModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header d-print-none">
-                <h5 class="modal-title">Invoice Preview</h5>
-                <div>
-                    <button class="btn btn-primary" onclick="window.print()"><i class="fas fa-print"></i> Print</button>
-                </div>
-            </div>
+            <div class="modal-header d-print-none"><h5 class="modal-title">Preview</h5><button class="btn btn-primary" onclick="window.print()"><i class="fas fa-print"></i> Print</button></div>
             <div class="modal-body" id="preview-area"></div>
         </div>
     </div>
@@ -267,16 +344,20 @@ const firebaseConfig = { apiKey: "AIzaSyBv2cgBjOi-MMwS1xynPftCXI63uVEiRsk", auth
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+
 let currentUser = null, currentDraftItems = [], finalizeItems = [], currentFinalizeId = null;
-let currentInvoiceNum = ""; // Store for PDF name
+
+const formatDate = (d) => { if(!d) return ''; const date = d.toDate ? d.toDate() : new Date(d); return `${String(date.getDate()).padStart(2,'0')}-${String(date.getMonth()+1).padStart(2,'0')}-${date.getFullYear()}`; }
+window.toggleSidebar = () => { document.getElementById('sidebar-nav').classList.toggle('show'); }
 
 document.getElementById('login-form').addEventListener('submit', (e) => { e.preventDefault(); toggleLoader(true); signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-password').value).then(() => toggleLoader(false)).catch(err => { alert(err.message); toggleLoader(false); }); });
+
 onAuthStateChanged(auth, (user) => {
     currentUser = user;
     if (user) {
         document.getElementById('auth-section').classList.add('d-none'); document.getElementById('app-section').classList.remove('d-none');
         document.getElementById('user-email-display').innerText = user.email; 
-        triggerDashboardLoad(); loadSettings(); loadInventory();
+        loadSettings(); triggerDashboardLoad(); loadInventory();
     } else {
         document.getElementById('auth-section').classList.remove('d-none'); document.getElementById('app-section').classList.add('d-none');
     }
@@ -285,13 +366,18 @@ document.getElementById('logout-btn').addEventListener('click', () => signOut(au
 
 window.showTab = (id) => {
     document.querySelectorAll('.content-tab').forEach(el => el.classList.add('d-none')); document.getElementById(id).classList.remove('d-none');
-    if(id==='dashboard') triggerDashboardLoad(); if(id==='saved-invoices') loadSavedInvoices(); if(id==='new-invoice') loadDrafts(); if(id==='expenses') loadExpenses(); if(id==='inventory') loadInventory();
+    document.querySelectorAll('.sidebar .nav-link').forEach(el => el.classList.remove('active')); event.target.closest('.nav-link').classList.add('active');
+    if(window.innerWidth < 768) document.getElementById('sidebar-nav').classList.remove('show');
+    if(id==='dashboard') triggerDashboardLoad(); if(id==='saved-invoices') loadSavedInvoices();
+    if(id==='new-invoice') loadDrafts(); if(id==='expenses') loadExpenses(); if(id==='inventory') loadInventory();
 };
 
 async function triggerDashboardLoad() {
     try {
-        const debugStatus = document.getElementById('debug-status'); debugStatus.innerText = "Scanning..."; debugStatus.className = "text-warning";
-        const invSnap = await getDocs(query(collection(db, "invoices"), where("status", "==", "final")));
+        if(!currentUser) return;
+        const debugStatus = document.getElementById('debug-status');
+        debugStatus.innerText = "Scanning Data..."; debugStatus.className="text-warning";
+        const invSnap = await getDocs(query(collection(db, "invoices"), where("userId", "==", currentUser.uid), where("status", "==", "final")));
         let rev=0, cogs=0, paid=0, invCount=0;
         invSnap.forEach(doc => {
             invCount++;
@@ -300,8 +386,10 @@ async function triggerDashboardLoad() {
             if(d.items) d.items.forEach(i => { iTotal += (i.qty||0)*(i.sellingRate||0); iCost += (i.qty||0)*(i.purchaseRate||0); });
             rev += iTotal; cogs += iCost; paid += d.paidAmount||0;
         });
+        
         let exp=0, expCount=0;
-        try { const expSnap = await getDocs(collection(db, "expenses")); expSnap.forEach(d => { expCount++; exp += d.data().amount||0; }); } catch(err){console.error(err);}
+        const expSnap = await getDocs(query(collection(db, "expenses"), where("userId", "==", currentUser.uid))); 
+        expSnap.forEach(d => { expCount++; exp += d.data().amount||0; });
         
         document.getElementById('dash-revenue').innerText = rev.toFixed(2);
         document.getElementById('dash-expense').innerText = exp.toFixed(2);
@@ -316,25 +404,43 @@ async function triggerDashboardLoad() {
         
         document.getElementById('debug-inv-count').innerText = invCount;
         document.getElementById('debug-exp-count').innerText = expCount;
-        debugStatus.innerText = "System Live"; debugStatus.className = "text-success fw-bold";
-    } catch(e) { document.getElementById('debug-status').innerText = "Error"; }
+        debugStatus.innerText = "System Live"; debugStatus.className="text-success fw-bold";
+    } catch(e) { console.error(e); }
 }
 window.triggerDashboardLoad = triggerDashboardLoad;
 
+async function loadExpenses() {
+    if(!currentUser) return;
+    const snap = await getDocs(query(collection(db,"expenses"), where("userId", "==", currentUser.uid)));
+    const tb=document.getElementById('expense-list'); tb.innerHTML='';
+    let list = [];
+    snap.forEach(d=>list.push({id:d.id, ...d.data()}));
+    list.sort((a,b) => b.date - a.date); 
+    list.forEach((d, idx) => {
+        tb.innerHTML+=`<tr><td>${idx+1}</td><td>${formatDate(d.date)}</td><td>${d.description}</td><td>${d.amount}</td><td><button class="btn btn-sm btn-outline-danger" onclick="requestAuth('delete_expense', '${d.id}')"><i class="fas fa-trash"></i></button></td></tr>`; 
+    });
+}
+window.saveExpense = async () => {
+    const d=document.getElementById('exp-desc').value, a=parseFloat(document.getElementById('exp-amount').value);
+    if(d && a && currentUser) { await addDoc(collection(db,"expenses"),{description:d, amount:a, date:new Date(), userId: currentUser.uid}); document.getElementById('exp-desc').value=''; document.getElementById('exp-amount').value=''; loadExpenses(); triggerDashboardLoad(); alert("Saved"); } else alert("Fill all");
+};
+
 async function loadInventory() {
-    const snap = await getDocs(collection(db, "inventory"));
-    const list = document.getElementById('inv-item-helper'); const tbody = document.getElementById('inventory-table-body');
-    list.innerHTML='<option selected disabled>Select from Inventory</option>'; tbody.innerHTML='';
+    if(!currentUser) return;
+    const snap = await getDocs(query(collection(db, "inventory"), where("userId", "==", currentUser.uid)));
+    const list = document.getElementById('inv-item-helper');
+    const tbody = document.getElementById('inventory-table-body');
+    list.innerHTML='<option selected disabled>Select...</option>'; tbody.innerHTML='';
     let items=[]; snap.forEach(d => items.push({ id: d.id, ...d.data() }));
     items.sort((a, b) => a.name.localeCompare(b.name));
-    items.forEach(n => {
+    items.forEach((n, idx) => {
         list.innerHTML += `<option value="${n.name}">${n.name}</option>`;
-        tbody.innerHTML += `<tr><td>${n.name}</td><td><span class="badge bg-success">Active</span></td><td><button class="btn btn-sm btn-outline-danger" onclick="requestAuth('delete_inventory', '${n.id}')"><i class="fas fa-trash"></i></button></td></tr>`;
+        tbody.innerHTML += `<tr><td>${idx+1}</td><td>${n.name}</td><td><span class="badge bg-success">Active</span></td><td><button class="btn btn-sm btn-outline-danger" onclick="requestAuth('delete_inventory', '${n.id}')"><i class="fas fa-trash"></i></button></td></tr>`;
     });
 }
 window.addManualInventory = async () => {
     const n = document.getElementById('manual-inv-name').value.trim();
-    if(n) { await addDoc(collection(db,"inventory"),{name:n}); document.getElementById('manual-inv-name').value=''; loadInventory(); alert("Saved"); }
+    if(n && currentUser) { await addDoc(collection(db,"inventory"),{name:n, userId: currentUser.uid}); document.getElementById('manual-inv-name').value=''; loadInventory(); alert("Saved"); }
 };
 
 window.addItemToDraft = () => {
@@ -344,21 +450,21 @@ window.addItemToDraft = () => {
         document.getElementById('inv-item').value=''; document.getElementById('inv-qty').value=''; document.getElementById('inv-buy-rate').value='';
     } else alert("Fill data");
 };
-function renderDraft(){ const tb=document.getElementById('temp-invoice-body'); tb.innerHTML=''; currentDraftItems.forEach((x,k)=>tb.innerHTML+=`<tr><td>${x.item}</td><td>${x.qty}</td><td>${x.purchaseRate}</td><td>${x.subtotalBuy}</td><td><button class="btn btn-sm btn-danger" onclick="currentDraftItems.splice(${k},1);renderDraft()">X</button></td></tr>`); }
+function renderDraft(){ const tb=document.getElementById('temp-invoice-body'); tb.innerHTML=''; currentDraftItems.forEach((x,k)=>tb.innerHTML+=`<tr><td>${k+1}</td><td>${x.item}</td><td>${x.qty}</td><td>${x.purchaseRate}</td><td>${x.subtotalBuy}</td><td><button class="btn btn-sm btn-danger" onclick="currentDraftItems.splice(${k},1);renderDraft()">X</button></td></tr>`); }
 
 window.saveDraftInvoice = async () => {
     const s=document.getElementById('inv-shop').value;
-    if(s && currentDraftItems.length) { 
-        await addDoc(collection(db,"invoices"), {shop:s, items:currentDraftItems, status:'draft', createdAt:new Date()});
+    if(s && currentDraftItems.length && currentUser) { 
+        await addDoc(collection(db,"invoices"), {shop:s, items:currentDraftItems, status:'draft', createdAt:new Date(), userId: currentUser.uid});
         currentDraftItems=[]; renderDraft(); document.getElementById('inv-shop').value=''; loadDrafts(); alert("Draft Saved");
     } else alert("Fill data");
 };
-
 async function loadDrafts() {
-    const snap = await getDocs(query(collection(db,"invoices"), where("status","==","draft")));
+    if(!currentUser) return;
+    const snap = await getDocs(query(collection(db,"invoices"), where("userId", "==", currentUser.uid), where("status","==","draft")));
     const tb=document.getElementById('drafts-table-body'); tb.innerHTML='';
     let d=[]; snap.forEach(x=>d.push({id:x.id, ...x.data()})); d.sort((a,b)=>b.createdAt-a.createdAt);
-    d.forEach(x=>{ tb.innerHTML+=`<tr><td>${x.createdAt.toDate().toLocaleDateString()}</td><td>${x.shop}</td><td>${x.items.length}</td><td><button class="btn btn-sm btn-primary" onclick="openFinalize('${x.id}','${x.shop}')">Finalize</button></td></tr>`; });
+    d.forEach((x, idx)=>{ tb.innerHTML+=`<tr><td>${idx+1}</td><td>${formatDate(x.createdAt)}</td><td>${x.shop}</td><td>${x.items.length}</td><td><button class="btn btn-sm btn-primary" onclick="openFinalize('${x.id}','${x.shop}')">Finalize</button></td></tr>`; });
 }
 
 window.openFinalize = async (id, shop) => {
@@ -366,31 +472,25 @@ window.openFinalize = async (id, shop) => {
     finalizeItems = (await getDoc(doc(db,"invoices",id))).data().items;
     renderFinalize(); new bootstrap.Modal(document.getElementById('finalizeModal')).show();
 };
-
-window.updateItemRate = (idx, val) => {
-    finalizeItems[idx].sellingRate = parseFloat(val)||0;
-    renderFinalize();
-};
-
+window.updateItemRate = (idx, val) => { finalizeItems[idx].sellingRate = parseFloat(val)||0; renderFinalize(); };
 function renderFinalize(){ 
     const tb=document.getElementById('finalize-table-body'); tb.innerHTML=''; let t=0;
     finalizeItems.forEach((x,k)=>{ 
         const s=x.sellingRate||0; t+=x.qty*s;
-        tb.innerHTML+=`<tr><td>${x.item}</td><td>${x.qty}</td><td>${x.purchaseRate}</td><td><input type="number" step="0.01" class="form-control form-control-sm" value="${s||''}" onchange="window.updateItemRate(${k}, this.value)"></td><td>${(x.qty*s).toFixed(2)}</td></tr>`;
+        tb.innerHTML+=`<tr><td>${k+1}</td><td>${x.item}</td><td>${x.qty}</td><td>${x.purchaseRate}</td><td><input type="number" step="0.01" class="form-control form-control-sm" value="${s||''}" onchange="window.updateItemRate(${k}, this.value)"></td><td>${(x.qty*s).toFixed(2)}</td></tr>`;
     });
     document.getElementById('fin-grand-total').innerText=t.toFixed(2);
 }
-
 window.confirmFinalize = async () => {
     if(finalizeItems.some(x=>!x.sellingRate)) return alert("Enter all rates");
     toggleLoader(true);
-    const invSnap = await getDocs(collection(db, "inventory"));
+    const invSnap = await getDocs(query(collection(db, "inventory"), where("userId", "==", currentUser.uid)));
     const existingNames = new Set();
     invSnap.forEach(d => existingNames.add(d.data().name.trim().toLowerCase()));
     for(const item of finalizeItems) {
         const cleanName = item.item.trim();
         if (!existingNames.has(cleanName.toLowerCase())) {
-            await addDoc(collection(db, "inventory"), { name: cleanName });
+            await addDoc(collection(db, "inventory"), { name: cleanName, userId: currentUser.uid });
             existingNames.add(cleanName.toLowerCase());
         }
     }
@@ -400,12 +500,13 @@ window.confirmFinalize = async () => {
 };
 
 async function loadSavedInvoices() {
-    const snap = await getDocs(query(collection(db,"invoices"), where("status","==","final")));
+    if(!currentUser) return;
+    const snap = await getDocs(query(collection(db,"invoices"), where("userId", "==", currentUser.uid), where("status","==","final")));
     const tb=document.getElementById('saved-invoices-body'); tb.innerHTML='';
     let d=[]; snap.forEach(x=>d.push({id:x.id, ...x.data()})); d.sort((a,b)=>b.finalizedAt-a.finalizedAt);
-    d.forEach(x=>{
+    d.forEach((x, idx)=>{
         let t=0; x.items.forEach(i=>t+=i.qty*i.sellingRate); const p=x.paidAmount||0;
-        tb.innerHTML+=`<tr class="inv-row"><td>${x.invoiceNum}</td><td>${x.finalizedAt.toDate().toLocaleDateString()}</td><td>${x.shop}</td><td>${t.toFixed(2)}</td><td class="text-success">${p.toFixed(2)}</td><td class="text-danger fw-bold">${(t-p).toFixed(2)}</td><td><button class="btn btn-sm btn-info" onclick="printView('${x.id}')"><i class="fas fa-print"></i></button> <button class="btn btn-sm btn-success" onclick="openPay('${x.id}','${x.invoiceNum}',${t-p})"><i class="fas fa-dollar-sign"></i></button> <button class="btn btn-sm btn-danger" onclick="requestAuth('delete_invoice', '${x.id}')"><i class="fas fa-trash"></i></button></td></tr>`;
+        tb.innerHTML+=`<tr class="inv-row"><td>${idx+1}</td><td>${x.invoiceNum}</td><td>${formatDate(x.finalizedAt)}</td><td>${x.shop}</td><td>${t.toFixed(2)}</td><td class="text-success">${p.toFixed(2)}</td><td class="text-danger fw-bold">${(t-p).toFixed(2)}</td><td><button class="btn btn-sm btn-info" onclick="printView('${x.id}')"><i class="fas fa-print"></i></button> <button class="btn btn-sm btn-success" onclick="openPay('${x.id}','${x.invoiceNum}',${t-p})"><i class="fas fa-dollar-sign"></i></button> <button class="btn btn-sm btn-danger" onclick="requestAuth('delete_invoice', '${x.id}')"><i class="fas fa-trash"></i></button></td></tr>`;
     });
 }
 
@@ -415,155 +516,164 @@ window.savePayment = async () => {
     if(a>0) { await updateDoc(doc(db,"invoices",id),{paidAmount:increment(a)}); bootstrap.Modal.getInstance(document.getElementById('paymentModal')).hide(); loadSavedInvoices(); triggerDashboardLoad(); }
 };
 
-window.saveExpense = async () => {
-    const d=document.getElementById('exp-desc').value, a=parseFloat(document.getElementById('exp-amount').value);
-    if(d && a) { await addDoc(collection(db,"expenses"),{description:d, amount:a, date:new Date()}); document.getElementById('exp-desc').value=''; document.getElementById('exp-amount').value=''; loadExpenses(); triggerDashboardLoad(); alert("Saved"); }
-    else alert("Fill all");
-};
-async function loadExpenses() {
-    const snap = await getDocs(query(collection(db,"expenses"), orderBy("date","desc")));
-    const tb=document.getElementById('expense-list'); tb.innerHTML='';
-    snap.forEach(d=>tb.innerHTML+=`<tr><td>${d.data().date.toDate().toLocaleDateString()}</td><td>${d.data().description}</td><td>${d.data().amount}</td><td><button class="btn btn-sm btn-outline-danger" onclick="requestAuth('delete_expense', '${d.id}')"><i class="fas fa-trash"></i></button></td></tr>`);
-}
-
-// --- UPDATED PRINT VIEW Logic ---
 window.printView = async (id) => {
+    document.body.className = "print-mode-invoice"; 
     const d=(await getDoc(doc(db,"invoices",id))).data();
-    const s=(await getDoc(doc(db,"settings","config"))).data()||{name:"Zimam Pharma"};
-    
+    const s=(await getDoc(doc(db,"settings","config_"+currentUser.uid))).data()||{name:"Medical Store"};
     let r='', t=0; 
-    let dateStr = d.finalizedAt && d.finalizedAt.toDate ? d.finalizedAt.toDate().toLocaleDateString() : 'N/A';
-    let invNum = d.invoiceNum || "INV-"+id.substr(0,5);
-
-    d.items.forEach(i=>{
-        let rowTot = i.qty*i.sellingRate; t+=rowTot; 
-        r+=`<tr>
-            <td>${i.item}</td>
-            <td style="text-align:center;">${i.qty}</td>
-            <td style="text-align:right;">${i.sellingRate.toFixed(2)}</td>
-            <td style="text-align:right;">${rowTot.toFixed(2)}</td>
-        </tr>`;
-    });
-    const paid = d.paidAmount || 0;
-    const due = t - paid;
-
-    // Generated HTML for Print/PDF
+    d.items.forEach(i=>{ let rowTot = i.qty*i.sellingRate; t+=rowTot; r+=`<tr><td>${i.item}</td><td style="text-align:center;">${i.qty}</td><td style="text-align:right;">${i.sellingRate.toFixed(2)}</td><td style="text-align:right;">${rowTot.toFixed(2)}</td></tr>`; });
+    
     const invoiceHTML = `
         <div class="invoice-layout">
-            <div class="print-header"><h1>${s.name}</h1><p>${s.address||''} | ${s.phone||''}</p></div>
-            <div class="meta">
-                <div style="width:48%"><h4>Bill To</h4><p><strong>${d.shop}</strong></p></div>
-                <div style="width:48%; text-align:right"><h4>Invoice</h4><p>#: ${invNum}</p><p>Date: ${dateStr}</p></div>
-            </div>
-            <table class="invoice-table">
-                <thead><tr><th style="width:40%">Item</th><th style="width:20%;text-align:center">Qty</th><th style="width:20%;text-align:right">Rate</th><th style="width:20%;text-align:right">Total</th></tr></thead>
-                <tbody>${r.replace(/td/g, 'td style="border-bottom:1px solid #ddd"')}</tbody>
+            <div style="text-align:center"><h1>${s.name}</h1><p>${s.address||''} | ${s.phone||''}</p></div>
+            <table class="print-header-table">
+                <tr><td style="width:60%"><h4 style="margin:0; font-size:14px; text-transform:uppercase; color:#666; margin-bottom:5px">Bill To</h4><p style="margin:0; font-weight:bold; font-size:16px">${d.shop}</p></td><td style="width:40%; text-align:right"><h4 style="margin:0; font-size:14px; text-transform:uppercase; color:#666; margin-bottom:5px">Invoice</h4><p style="margin:0"># ${d.invoiceNum}</p><p style="margin:0">Date: ${formatDate(d.finalizedAt)}</p></td></tr>
             </table>
-            <div style="text-align:right; margin-top:20px">
-                <table style="width:50%; float:right; font-size:14px">
-                    <tr><td style="text-align:right; padding-right:10px">Total:</td><td style="text-align:right; font-weight:bold">${t.toFixed(2)}</td></tr>
-                    <tr><td style="text-align:right; padding-right:10px">Paid:</td><td style="text-align:right">${paid.toFixed(2)}</td></tr>
-                    <tr><td style="text-align:right; padding-right:10px; border-top:2px solid #000">Due:</td><td style="text-align:right; font-weight:bold; border-top:2px solid #000">${due.toFixed(2)}</td></tr>
-                </table>
-                <div style="clear:both"></div>
-            </div>
-            <div class="invoice-footer">${s.footer||''}</div>
-        </div>
-    `;
-
+            <table class="invoice-table"><thead><tr><th style="width:40%">Item</th><th style="width:20%;text-align:center">Qty</th><th style="width:20%;text-align:right">Rate</th><th style="width:20%;text-align:right">Total</th></tr></thead><tbody>${r}</tbody></table>
+            <div style="text-align:right; margin-top:20px"><table style="width:50%; float:right; font-size:14px"><tr><td style="text-align:right; padding-right:10px">Total:</td><td style="text-align:right; font-weight:bold">${t.toFixed(2)}</td></tr><tr><td style="text-align:right; padding-right:10px">Paid:</td><td style="text-align:right">${(d.paidAmount||0).toFixed(2)}</td></tr><tr><td style="text-align:right; padding-right:10px; border-top:2px solid #000">Due:</td><td style="text-align:right; font-weight:bold; border-top:2px solid #000">${(t-(d.paidAmount||0)).toFixed(2)}</td></tr></table><div style="clear:both"></div></div>
+            <div style="margin-top:50px; text-align:center; font-style:italic; border-top:1px dashed #999; padding-top:10px">${s.footer||''}</div>
+        </div>`;
     document.getElementById('printable-container').innerHTML = invoiceHTML;
     document.getElementById('preview-area').innerHTML = `<div style="border:1px solid #eee; padding:10px; transform:scale(0.9)">${invoiceHTML}</div>`;
     new bootstrap.Modal(document.getElementById('printModal')).show();
 };
 
 window.generateStatement = async () => {
-    const s=new Date(document.getElementById('st-start').value), e=new Date(document.getElementById('st-end').value); e.setHours(23,59,59);
-    const inv=await getDocs(query(collection(db,"invoices"),where("status","==","final"))), exp=await getDocs(query(collection(db,"expenses"),where("date",">=",s),where("date","<=",e)));
-    let ts=0, te=0, h='';
-    inv.forEach(d=>{ const x=d.data(); if(x.finalizedAt.toDate()>=s && x.finalizedAt.toDate()<=e){ let t=0;x.items.forEach(i=>t+=i.qty*i.sellingRate); ts+=t; h+=`<tr><td>${x.finalizedAt.toDate().toLocaleDateString()}</td><td>Sale: ${x.shop}</td><td>${t.toFixed(2)}</td></tr>`; }});
-    exp.forEach(d=>{ te+=d.data().amount; h+=`<tr><td>${d.data().date.toDate().toLocaleDateString()}</td><td>Exp: ${d.data().description}</td><td>-${d.data().amount}</td></tr>`; });
-    document.getElementById('st-sales').innerText=ts.toFixed(2); document.getElementById('st-expenses').innerText=te.toFixed(2); document.getElementById('st-profit').innerText=(ts-te).toFixed(2); document.getElementById('st-table').innerHTML=h; document.getElementById('statement-result').classList.remove('d-none');
+    if(!currentUser) return;
+    const startStr = document.getElementById('st-start').value;
+    const endStr = document.getElementById('st-end').value;
+    const filter = document.getElementById('st-filter').value;
+    if(!startStr || !endStr) return alert("Select dates");
+    
+    const s = new Date(startStr); const e = new Date(endStr); e.setHours(23,59,59);
+    const invSnap = await getDocs(query(collection(db,"invoices"), where("userId", "==", currentUser.uid), where("status","==","final")));
+    const expSnap = await getDocs(query(collection(db,"expenses"), where("userId", "==", currentUser.uid)));
+    let items = [];
+    invSnap.forEach(d => { const x=d.data(); if(x.finalizedAt.toDate() >= s && x.finalizedAt.toDate() <= e) { let t=0; x.items.forEach(i=>t+=i.qty*i.sellingRate); items.push({date: x.finalizedAt.toDate(), desc: `Sales - ${x.shop} (${x.invoiceNum})`, type: 'Income', amount: t}); }});
+    expSnap.forEach(d => { const x=d.data(); if(x.date.toDate() >= s && x.date.toDate() <= e) { items.push({date: x.date.toDate(), desc: x.description, type: 'Expense', amount: x.amount}); }});
+    items.sort((a,b) => a.date - b.date);
+    
+    let html = '', runningBal = 0, totInc=0, totExp=0, sn=0;
+    items.forEach((x, idx) => {
+        if(filter === 'income' && x.type !== 'Income') return;
+        if(filter === 'expense' && x.type !== 'Expense') return;
+        sn++;
+        if(x.type === 'Income') { runningBal += x.amount; totInc+=x.amount; } else { runningBal -= x.amount; totExp+=x.amount; }
+        html += `<tr><td class="text-center">${sn}</td><td>${formatDate(x.date)}</td><td>${x.desc}</td><td><span class="badge ${x.type==='Income'?'bg-success':'bg-danger'}">${x.type}</span></td><td class="text-end">${x.amount.toFixed(2)}</td><td class="text-end fw-bold">${runningBal.toFixed(2)}</td></tr>`;
+    });
+    
+    document.getElementById('st-sales').innerText = totInc.toFixed(2);
+    document.getElementById('st-expenses').innerText = totExp.toFixed(2);
+    // REMOVED st-profit update
+    document.getElementById('st-table').innerHTML = html;
+    document.getElementById('statement-result').classList.remove('d-none');
+    window.currentStatementData = { items, totInc, totExp, start: startStr, end: endStr, filter: filter };
 };
 
-async function loadSettings() { const d=(await getDoc(doc(db,"settings","config"))).data(); if(d){document.getElementById('set-name').value=d.name||''; document.getElementById('set-address').value=d.address||''; document.getElementById('set-phone').value=d.phone||''; document.getElementById('set-email').value=d.email||''; document.getElementById('set-footer').value=d.footer||'';}}
-document.getElementById('org-settings-form').addEventListener('submit',async(e)=>{e.preventDefault(); await setDoc(doc(db,"settings","config"),{name:document.getElementById('set-name').value, address:document.getElementById('set-address').value, phone:document.getElementById('set-phone').value, email:document.getElementById('set-email').value, footer:document.getElementById('set-footer').value}); alert("Saved");});
+window.printStatement = async () => {
+    if(!window.currentStatementData) return alert("Generate statement first");
+    document.body.className = "print-mode-statement";
+    const { items, totInc, totExp, start, end, filter } = window.currentStatementData;
+    const s = (await getDoc(doc(db,"settings","config_"+currentUser.uid))).data()||{name:"Medical Store", address: "", phone: ""};
+    
+    let rows = '', run=0, sn=0;
+    items.forEach((x, i) => {
+        if(filter === 'income' && x.type !== 'Income') return;
+        if(filter === 'expense' && x.type !== 'Expense') return;
+        sn++;
+        if(x.type==='Income') run+=x.amount; else run-=x.amount;
+        rows += `<tr><td style="text-align:center">${sn}</td><td style="text-align:center">${formatDate(x.date)}</td><td>${x.desc}</td><td style="text-align:center">${x.type}</td><td class="amount">${x.amount.toFixed(2)}</td><td class="amount">${run.toFixed(2)}</td></tr>`;
+    });
+    
+    // REMOVED Net Profit from Footer
+    const printHTML = `
+        <div class="stmt-print-layout">
+            <div class="stmt-header"><h1>${s.name}</h1><p>${s.address||''}</p><p>Phone: ${s.phone||''}</p></div>
+            <div class="stmt-title"><h3>Financial Statement (${filter.toUpperCase()})</h3><p style="text-align:center; font-size:14px; margin-top:5px">From: ${formatDate(new Date(start))} To: ${formatDate(new Date(end))}</p></div>
+            <table class="stmt-table"><thead><tr><th width="5%">S.N.</th><th width="12%">Date</th><th>Description</th><th width="10%">Type</th><th width="15%">Amount</th><th width="15%">Balance</th></tr></thead><tbody>${rows}</tbody></table>
+            <div class="stmt-footer-summary"><span>Total Income: ${totInc.toFixed(2)}</span><span>Total Expense: ${totExp.toFixed(2)}</span></div>
+        </div>`;
+    document.getElementById('printable-statement-container').innerHTML = printHTML;
+    window.print();
+};
 
-window.backupData = async () => { const i=[],e=[],n=[]; (await getDocs(collection(db,"invoices"))).forEach(d=>i.push(d.data())); (await getDocs(collection(db,"expenses"))).forEach(d=>e.push(d.data())); (await getDocs(collection(db,"inventory"))).forEach(d=>n.push(d.data())); const b=new Blob([JSON.stringify({invoices:i,expenses:e,inventory:n})],{type:"application/json"}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download="backup.json"; a.click(); };
+async function loadSettings() { 
+    if(!currentUser) return;
+    const d=(await getDoc(doc(db,"settings","config_"+currentUser.uid))).data(); 
+    const appName = d && d.name ? d.name : "Medical Store";
+    document.getElementById('org-brand-sidebar').innerText = appName;
+    document.getElementById('org-brand-mobile').innerText = appName;
+    document.getElementById('login-org-name').innerText = appName;
+    if(d){document.getElementById('set-name').value=d.name||''; document.getElementById('set-address').value=d.address||''; document.getElementById('set-phone').value=d.phone||''; document.getElementById('set-email').value=d.email||''; document.getElementById('set-footer').value=d.footer||'';}
+}
+document.getElementById('org-settings-form').addEventListener('submit',async(e)=>{
+    e.preventDefault(); 
+    if(currentUser) {
+        await setDoc(doc(db,"settings","config_"+currentUser.uid),{name:document.getElementById('set-name').value, address:document.getElementById('set-address').value, phone:document.getElementById('set-phone').value, email:document.getElementById('set-email').value, footer:document.getElementById('set-footer').value}); 
+        alert("Saved & Updated!"); loadSettings();
+    }
+});
+
+window.backupData = async () => { 
+    if(!currentUser) return;
+    const i=[],e=[],n=[]; 
+    (await getDocs(query(collection(db,"invoices"), where("userId", "==", currentUser.uid)))).forEach(d=>i.push(d.data())); 
+    (await getDocs(query(collection(db,"expenses"), where("userId", "==", currentUser.uid)))).forEach(d=>e.push(d.data()));
+    (await getDocs(query(collection(db,"inventory"), where("userId", "==", currentUser.uid)))).forEach(d=>n.push(d.data())); 
+    const s = (await getDoc(doc(db,"settings","config_"+currentUser.uid))).data() || {};
+    const b=new Blob([JSON.stringify({invoices:i,expenses:e,inventory:n,settings:s})],{type:"application/json"}); 
+    const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download="backup_"+formatDate(new Date())+".json"; a.click(); 
+};
+
 window.importData = () => { 
-    const fileInput = document.getElementById('import-file');
-    const file = fileInput.files[0];
-    if (!file) return alert("Please select a backup file first.");
-
-    if (!confirm("WARNING: Import will add data to your current database. Continue?")) return;
-
+    if(!currentUser) return;
+    const file = document.getElementById('import-file').files[0];
+    if (!file) return alert("Select file");
+    if (!confirm("WARNING: This will DELETE ALL CURRENT DATA and replace it with the backup. Continue?")) return;
     toggleLoader(true);
     const reader = new FileReader();
-
-    // Helper to safely parse dates (String or Timestamp Object)
-    const safeDate = (d) => {
-        if (!d) return null;
-        if (d.seconds) return new Date(d.seconds * 1000); // Handle Firestore Timestamp object
-        return new Date(d); // Handle ISO String
-    };
+    const safeDate = (d) => { if (!d) return null; if (d.seconds) return new Date(d.seconds * 1000); return new Date(d); };
 
     reader.onload = async (e) => {
         try {
             const data = JSON.parse(e.target.result);
+            const inv = await getDocs(query(collection(db, "invoices"), where("userId", "==", currentUser.uid))); inv.forEach(d => deleteDoc(d.ref));
+            const exp = await getDocs(query(collection(db, "expenses"), where("userId", "==", currentUser.uid))); exp.forEach(d => deleteDoc(d.ref)); 
+            const items = await getDocs(query(collection(db, "inventory"), where("userId", "==", currentUser.uid))); items.forEach(d => deleteDoc(d.ref)); 
             
-            // Import Invoices
-            if (data.invoices) {
-                for (const item of data.invoices) {
-                    const docData = { ...item };
-                    if (item.createdAt) docData.createdAt = safeDate(item.createdAt);
-                    if (item.finalizedAt) docData.finalizedAt = safeDate(item.finalizedAt);
-                    await addDoc(collection(db, "invoices"), docData);
-                }
-            }
+            if (data.invoices) { for (const item of data.invoices) { const d = { ...item, userId: currentUser.uid }; delete d.id; if(item.createdAt) d.createdAt = safeDate(item.createdAt); if(item.finalizedAt) d.finalizedAt = safeDate(item.finalizedAt); await addDoc(collection(db, "invoices"), d); } }
+            if (data.expenses) { for (const item of data.expenses) { const d = { ...item, userId: currentUser.uid }; delete d.id; if(item.date) d.date = safeDate(item.date); await addDoc(collection(db, "expenses"), d); } }
+            if (data.inventory) { for (const item of data.inventory) { const d = { ...item, userId: currentUser.uid }; delete d.id; await addDoc(collection(db, "inventory"), d); } }
+            if (data.settings) { await setDoc(doc(db,"settings","config_"+currentUser.uid), data.settings); }
 
-            // Import Expenses
-            if (data.expenses) {
-                for (const item of data.expenses) {
-                    const docData = { ...item };
-                    if (item.date) docData.date = safeDate(item.date);
-                    await addDoc(collection(db, "expenses"), docData);
-                }
-            }
-
-            // Import Inventory
-            if (data.inventory) {
-                for (const item of data.inventory) {
-                    await addDoc(collection(db, "inventory"), item);
-                }
-            }
-
-            alert("Backup restored successfully!");
-            location.reload();
-
-        } catch (err) {
-            console.error(err);
-            alert("Import Failed: " + err.message);
-        } finally {
-            toggleLoader(false);
-        }
+            alert("Full Restore Complete!"); location.reload();
+        } catch (err) { alert("Error: " + err.message); } finally { toggleLoader(false); }
     };
     reader.readAsText(file);
 };
 
-// Security
 window.requestAuth = (t,id) => { document.getElementById('auth-action-type').value=t; document.getElementById('auth-action-id').value=id||''; new bootstrap.Modal(document.getElementById('authModal')).show(); };
 window.performAuthAction = async () => { 
     try { 
-        await reauthenticateWithCredential(currentUser, EmailAuthProvider.credential(currentUser.email, document.getElementById('auth-check-pass').value)); 
+        if(!currentUser) return;
+        await reauthenticateWithCredential(currentUser, EmailAuthProvider.credential(currentUser.email, document.getElementById('auth-check-pass').value));
         const t=document.getElementById('auth-action-type').value; 
         const id=document.getElementById('auth-action-id').value; 
         bootstrap.Modal.getInstance(document.getElementById('authModal')).hide(); 
         
         if(t==='settings'){document.getElementById('settings-lock').classList.add('d-none');document.getElementById('settings-content').classList.remove('d-none');}
-        if(t==='delete_invoice') { await deleteDoc(doc(db, "invoices", id)); loadSavedInvoices(); triggerDashboardLoad(); alert("Invoice Deleted"); }
-        if(t==='delete_expense') { await deleteDoc(doc(db, "expenses", id)); loadExpenses(); triggerDashboardLoad(); alert("Expense Deleted"); }
-        if(t==='delete_inventory') { await deleteDoc(doc(db, "inventory", id)); loadInventory(); alert("Item Deleted"); }
-        if(t==='reset') { toggleLoader(true); const inv = await getDocs(collection(db, "invoices")); inv.forEach(d => deleteDoc(d.ref)); const exp = await getDocs(collection(db, "expenses")); exp.forEach(d => deleteDoc(d.ref)); const items = await getDocs(collection(db, "inventory")); items.forEach(d => deleteDoc(d.ref)); alert("Reset Complete"); location.reload(); }
-    } catch(e){ alert("Wrong Password or Error: " + e.message); } 
+        if(t==='delete_invoice') { await deleteDoc(doc(db, "invoices", id)); loadSavedInvoices(); triggerDashboardLoad(); alert("Deleted"); }
+        if(t==='delete_expense') { await deleteDoc(doc(db, "expenses", id)); loadExpenses(); triggerDashboardLoad(); alert("Deleted"); }
+        if(t==='delete_inventory') { await deleteDoc(doc(db, "inventory", id)); loadInventory(); alert("Deleted"); }
+        if(t==='reset') { 
+            toggleLoader(true); 
+            const inv = await getDocs(query(collection(db, "invoices"), where("userId", "==", currentUser.uid))); inv.forEach(d => deleteDoc(d.ref));
+            const exp = await getDocs(query(collection(db, "expenses"), where("userId", "==", currentUser.uid))); exp.forEach(d => deleteDoc(d.ref)); 
+            const items = await getDocs(query(collection(db, "inventory"), where("userId", "==", currentUser.uid))); items.forEach(d => deleteDoc(d.ref)); 
+            await deleteDoc(doc(db, "settings", "config_"+currentUser.uid));
+            alert("Reset Complete"); location.reload(); 
+        }
+    } catch(e){ alert("Wrong Password: " + e.message); } 
 };
 
 window.filterInventory = () => { const t=document.getElementById('inventory-search').value.toLowerCase(); document.querySelectorAll('#inventory-table-body tr').forEach(r=>r.style.display=r.innerText.toLowerCase().includes(t)?'':'none'); };
