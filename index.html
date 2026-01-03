@@ -251,8 +251,9 @@
                     </div>
                     <div id="statement-result" class="d-none">
                         <div class="row text-center mb-3 g-2">
-                            <div class="col-6"><div class="p-2 bg-success bg-opacity-10 border border-success rounded"><small>Income</small><br><strong id="st-sales" class="text-success">0</strong></div></div>
-                            <div class="col-6"><div class="p-2 bg-danger bg-opacity-10 border border-danger rounded"><small>Expense</small><br><strong id="st-expenses" class="text-danger">0</strong></div></div>
+                            <div class="col-4"><div class="p-2 bg-success bg-opacity-10 border border-success rounded"><small>Income</small><br><strong id="st-sales" class="text-success">0</strong></div></div>
+                            <div class="col-4"><div class="p-2 bg-danger bg-opacity-10 border border-danger rounded"><small>Expense</small><br><strong id="st-expenses" class="text-danger">0</strong></div></div>
+                            <div class="col-4"><div class="p-2 bg-primary bg-opacity-10 border border-primary rounded"><small>Net Profit</small><br><strong id="st-profit" class="text-primary">0</strong></div></div>
                         </div>
                         <div class="table-responsive">
                             <table class="table table-bordered table-striped bg-white table-sm">
@@ -339,19 +340,15 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, EmailAuthProvider, reauthenticateWithCredential } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
 import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, where, orderBy, getDoc, setDoc, increment } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
-
 const firebaseConfig = { apiKey: "AIzaSyBv2cgBjOi-MMwS1xynPftCXI63uVEiRsk", authDomain: "zimam-pharma.firebaseapp.com", projectId: "zimam-pharma", storageBucket: "zimam-pharma.firebasestorage.app", messagingSenderId: "7955585226", appId: "1:7955585226:web:a18e625b47958d1b073c33", measurementId: "G-B6LHCTC9SE" };
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-
 let currentUser = null, currentDraftItems = [], finalizeItems = [], currentFinalizeId = null;
-
 const formatDate = (d) => { if(!d) return ''; const date = d.toDate ? d.toDate() : new Date(d); return `${String(date.getDate()).padStart(2,'0')}-${String(date.getMonth()+1).padStart(2,'0')}-${date.getFullYear()}`; }
 window.toggleSidebar = () => { document.getElementById('sidebar-nav').classList.toggle('show'); }
 
 document.getElementById('login-form').addEventListener('submit', (e) => { e.preventDefault(); toggleLoader(true); signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-password').value).then(() => toggleLoader(false)).catch(err => { alert(err.message); toggleLoader(false); }); });
-
 onAuthStateChanged(auth, (user) => {
     currentUser = user;
     if (user) {
@@ -366,12 +363,12 @@ document.getElementById('logout-btn').addEventListener('click', () => signOut(au
 
 window.showTab = (id) => {
     document.querySelectorAll('.content-tab').forEach(el => el.classList.add('d-none')); document.getElementById(id).classList.remove('d-none');
-    document.querySelectorAll('.sidebar .nav-link').forEach(el => el.classList.remove('active')); event.target.closest('.nav-link').classList.add('active');
+    document.querySelectorAll('.sidebar .nav-link').forEach(el => el.classList.remove('active'));
+    event.target.closest('.nav-link').classList.add('active');
     if(window.innerWidth < 768) document.getElementById('sidebar-nav').classList.remove('show');
     if(id==='dashboard') triggerDashboardLoad(); if(id==='saved-invoices') loadSavedInvoices();
     if(id==='new-invoice') loadDrafts(); if(id==='expenses') loadExpenses(); if(id==='inventory') loadInventory();
 };
-
 async function triggerDashboardLoad() {
     try {
         if(!currentUser) return;
@@ -386,16 +383,13 @@ async function triggerDashboardLoad() {
             if(d.items) d.items.forEach(i => { iTotal += (i.qty||0)*(i.sellingRate||0); iCost += (i.qty||0)*(i.purchaseRate||0); });
             rev += iTotal; cogs += iCost; paid += d.paidAmount||0;
         });
-        
         let exp=0, expCount=0;
         const expSnap = await getDocs(query(collection(db, "expenses"), where("userId", "==", currentUser.uid))); 
         expSnap.forEach(d => { expCount++; exp += d.data().amount||0; });
-        
         document.getElementById('dash-revenue').innerText = rev.toFixed(2);
         document.getElementById('dash-expense').innerText = exp.toFixed(2);
         document.getElementById('dash-net-profit').innerText = (rev - cogs - exp).toFixed(2);
         document.getElementById('dash-due').innerText = (rev - paid).toFixed(2);
-        
         document.getElementById('logic-sales').innerText = rev.toFixed(2);
         document.getElementById('logic-cogs').innerText = "- " + cogs.toFixed(2);
         document.getElementById('logic-gross').innerText = (rev - cogs).toFixed(2);
@@ -422,7 +416,8 @@ async function loadExpenses() {
 }
 window.saveExpense = async () => {
     const d=document.getElementById('exp-desc').value, a=parseFloat(document.getElementById('exp-amount').value);
-    if(d && a && currentUser) { await addDoc(collection(db,"expenses"),{description:d, amount:a, date:new Date(), userId: currentUser.uid}); document.getElementById('exp-desc').value=''; document.getElementById('exp-amount').value=''; loadExpenses(); triggerDashboardLoad(); alert("Saved"); } else alert("Fill all");
+    if(d && a && currentUser) { await addDoc(collection(db,"expenses"),{description:d, amount:a, date:new Date(), userId: currentUser.uid}); document.getElementById('exp-desc').value=''; document.getElementById('exp-amount').value=''; loadExpenses(); triggerDashboardLoad(); alert("Saved");
+    } else alert("Fill all");
 };
 
 async function loadInventory() {
@@ -430,7 +425,8 @@ async function loadInventory() {
     const snap = await getDocs(query(collection(db, "inventory"), where("userId", "==", currentUser.uid)));
     const list = document.getElementById('inv-item-helper');
     const tbody = document.getElementById('inventory-table-body');
-    list.innerHTML='<option selected disabled>Select...</option>'; tbody.innerHTML='';
+    list.innerHTML='<option selected disabled>Select...</option>';
+    tbody.innerHTML='';
     let items=[]; snap.forEach(d => items.push({ id: d.id, ...d.data() }));
     items.sort((a, b) => a.name.localeCompare(b.name));
     items.forEach((n, idx) => {
@@ -442,16 +438,15 @@ window.addManualInventory = async () => {
     const n = document.getElementById('manual-inv-name').value.trim();
     if(n && currentUser) { await addDoc(collection(db,"inventory"),{name:n, userId: currentUser.uid}); document.getElementById('manual-inv-name').value=''; loadInventory(); alert("Saved"); }
 };
-
 window.addItemToDraft = () => {
     const i=document.getElementById('inv-item').value, q=parseFloat(document.getElementById('inv-qty').value), r=parseFloat(document.getElementById('inv-buy-rate').value);
     if(i && q && !isNaN(r)) { 
         currentDraftItems.push({item:i, qty:q, purchaseRate:r, subtotalBuy:q*r}); renderDraft(); 
-        document.getElementById('inv-item').value=''; document.getElementById('inv-qty').value=''; document.getElementById('inv-buy-rate').value='';
+        document.getElementById('inv-item').value='';
+        document.getElementById('inv-qty').value=''; document.getElementById('inv-buy-rate').value='';
     } else alert("Fill data");
 };
 
-// FIX: Added window.deleteDraftItem to be accessible from inline onclick
 window.deleteDraftItem = (k) => {
     currentDraftItems.splice(k, 1);
     renderDraft();
@@ -459,7 +454,7 @@ window.deleteDraftItem = (k) => {
 
 function renderDraft(){ 
     const tb=document.getElementById('temp-invoice-body'); 
-    tb.innerHTML=''; 
+    tb.innerHTML='';
     currentDraftItems.forEach((x,k)=> {
         tb.innerHTML+=`<tr>
             <td>${k+1}</td>
@@ -469,7 +464,7 @@ function renderDraft(){
             <td>${x.subtotalBuy}</td>
             <td><button class="btn btn-sm btn-danger" onclick="window.deleteDraftItem(${k})"><i class="fas fa-times"></i></button></td>
         </tr>`;
-    }); 
+    });
 }
 
 window.saveDraftInvoice = async () => {
@@ -516,7 +511,8 @@ window.confirmFinalize = async () => {
     }
     await updateDoc(doc(db,"invoices",currentFinalizeId), {status:'final', items:finalizeItems, finalizedAt:new Date(), invoiceNum:"INV-"+Date.now().toString().slice(-6), paidAmount:0});
     bootstrap.Modal.getInstance(document.getElementById('finalizeModal')).hide();
-    loadDrafts(); loadInventory(); triggerDashboardLoad(); toggleLoader(false); alert("Finalized");
+    loadDrafts(); loadInventory();
+    triggerDashboardLoad(); toggleLoader(false); alert("Finalized");
 };
 
 async function loadSavedInvoices() {
@@ -535,26 +531,29 @@ window.savePayment = async () => {
     const id=document.getElementById('pay-inv-id').value, a=parseFloat(document.getElementById('pay-amount').value);
     if(a>0) { await updateDoc(doc(db,"invoices",id),{paidAmount:increment(a)}); bootstrap.Modal.getInstance(document.getElementById('paymentModal')).hide(); loadSavedInvoices(); triggerDashboardLoad(); }
 };
-
 window.printView = async (id) => {
     document.body.className = "print-mode-invoice"; 
     const d=(await getDoc(doc(db,"invoices",id))).data();
     const s=(await getDoc(doc(db,"settings","config_"+currentUser.uid))).data()||{name:"Medical Store"};
     let r='', t=0; 
     d.items.forEach(i=>{ let rowTot = i.qty*i.sellingRate; t+=rowTot; r+=`<tr><td>${i.item}</td><td style="text-align:center;">${i.qty}</td><td style="text-align:right;">${i.sellingRate.toFixed(2)}</td><td style="text-align:right;">${rowTot.toFixed(2)}</td></tr>`; });
-    
     const invoiceHTML = `
         <div class="invoice-layout">
-            <div style="text-align:center"><h1>${s.name}</h1><p>${s.address||''} | ${s.phone||''}</p></div>
+            <div style="text-align:center"><h1>${s.name}</h1><p>${s.address||''} |
+            ${s.phone||''}</p></div>
             <table class="print-header-table">
                 <tr><td style="width:60%"><h4 style="margin:0; font-size:14px; text-transform:uppercase; color:#666; margin-bottom:5px">Bill To</h4><p style="margin:0; font-weight:bold; font-size:16px">${d.shop}</p></td><td style="width:40%; text-align:right"><h4 style="margin:0; font-size:14px; text-transform:uppercase; color:#666; margin-bottom:5px">Invoice</h4><p style="margin:0"># ${d.invoiceNum}</p><p style="margin:0">Date: ${formatDate(d.finalizedAt)}</p></td></tr>
             </table>
             <table class="invoice-table"><thead><tr><th style="width:40%">Item</th><th style="width:20%;text-align:center">Qty</th><th style="width:20%;text-align:right">Rate</th><th style="width:20%;text-align:right">Total</th></tr></thead><tbody>${r}</tbody></table>
-            <div style="text-align:right; margin-top:20px"><table style="width:50%; float:right; font-size:14px"><tr><td style="text-align:right; padding-right:10px">Total:</td><td style="text-align:right; font-weight:bold">${t.toFixed(2)}</td></tr><tr><td style="text-align:right; padding-right:10px">Paid:</td><td style="text-align:right">${(d.paidAmount||0).toFixed(2)}</td></tr><tr><td style="text-align:right; padding-right:10px; border-top:2px solid #000">Due:</td><td style="text-align:right; font-weight:bold; border-top:2px solid #000">${(t-(d.paidAmount||0)).toFixed(2)}</td></tr></table><div style="clear:both"></div></div>
-            <div style="margin-top:50px; text-align:center; font-style:italic; border-top:1px dashed #999; padding-top:10px">${s.footer||''}</div>
+            <div style="text-align:right; margin-top:20px"><table style="width:50%; float:right; font-size:14px"><tr><td style="text-align:right; padding-right:10px">Total:</td><td style="text-align:right;
+            font-weight:bold">${t.toFixed(2)}</td></tr><tr><td style="text-align:right; padding-right:10px">Paid:</td><td style="text-align:right">${(d.paidAmount||0).toFixed(2)}</td></tr><tr><td style="text-align:right; padding-right:10px; border-top:2px solid #000">Due:</td><td style="text-align:right; font-weight:bold;
+            border-top:2px solid #000">${(t-(d.paidAmount||0)).toFixed(2)}</td></tr></table><div style="clear:both"></div></div>
+            <div style="margin-top:50px; text-align:center; font-style:italic;
+            border-top:1px dashed #999; padding-top:10px">${s.footer||''}</div>
         </div>`;
     document.getElementById('printable-container').innerHTML = invoiceHTML;
-    document.getElementById('preview-area').innerHTML = `<div style="border:1px solid #eee; padding:10px; transform:scale(0.9)">${invoiceHTML}</div>`;
+    document.getElementById('preview-area').innerHTML = `<div style="border:1px solid #eee;
+    padding:10px; transform:scale(0.9)">${invoiceHTML}</div>`;
     new bootstrap.Modal(document.getElementById('printModal')).show();
 };
 
@@ -569,7 +568,24 @@ window.generateStatement = async () => {
     const invSnap = await getDocs(query(collection(db,"invoices"), where("userId", "==", currentUser.uid), where("status","==","final")));
     const expSnap = await getDocs(query(collection(db,"expenses"), where("userId", "==", currentUser.uid)));
     let items = [];
-    invSnap.forEach(d => { const x=d.data(); if(x.finalizedAt.toDate() >= s && x.finalizedAt.toDate() <= e) { let t=0; x.items.forEach(i=>t+=i.qty*i.sellingRate); items.push({date: x.finalizedAt.toDate(), desc: `Sales - ${x.shop} (${x.invoiceNum})`, type: 'Income', amount: t}); }});
+    
+    // We will calculate Total Cost of Goods Sold (COGS) in this period
+    let totalCOGS = 0;
+
+    invSnap.forEach(d => { 
+        const x=d.data(); 
+        if(x.finalizedAt.toDate() >= s && x.finalizedAt.toDate() <= e) { 
+            let t=0; // Total Sales Value for this invoice
+            let c=0; // Total Cost Value for this invoice
+            x.items.forEach(i => {
+                t += i.qty * (i.sellingRate || 0);
+                c += i.qty * (i.purchaseRate || 0);
+            });
+            totalCOGS += c; // Add to period Cost
+            items.push({date: x.finalizedAt.toDate(), desc: `Sales - ${x.shop} (${x.invoiceNum})`, type: 'Income', amount: t});
+        }
+    });
+    
     expSnap.forEach(d => { const x=d.data(); if(x.date.toDate() >= s && x.date.toDate() <= e) { items.push({date: x.date.toDate(), desc: x.description, type: 'Expense', amount: x.amount}); }});
     items.sort((a,b) => a.date - b.date);
     
@@ -581,19 +597,26 @@ window.generateStatement = async () => {
         if(x.type === 'Income') { runningBal += x.amount; totInc+=x.amount; } else { runningBal -= x.amount; totExp+=x.amount; }
         html += `<tr><td class="text-center">${sn}</td><td>${formatDate(x.date)}</td><td>${x.desc}</td><td><span class="badge ${x.type==='Income'?'bg-success':'bg-danger'}">${x.type}</span></td><td class="text-end">${x.amount.toFixed(2)}</td><td class="text-end fw-bold">${runningBal.toFixed(2)}</td></tr>`;
     });
-    
     document.getElementById('st-sales').innerText = totInc.toFixed(2);
     document.getElementById('st-expenses').innerText = totExp.toFixed(2);
-    // REMOVED st-profit update
+    
+    // UPDATED: Calculate Net Profit for the view = (Total Sales - COGS) - Expenses
+    const netProfitView = (totInc - totalCOGS) - totExp;
+    document.getElementById('st-profit').innerText = netProfitView.toFixed(2);
+    
     document.getElementById('st-table').innerHTML = html;
     document.getElementById('statement-result').classList.remove('d-none');
-    window.currentStatementData = { items, totInc, totExp, start: startStr, end: endStr, filter: filter };
+    
+    // Passing totalCOGS to the print function
+    window.currentStatementData = { items, totInc, totExp, totalCOGS, start: startStr, end: endStr, filter: filter };
 };
 
 window.printStatement = async () => {
     if(!window.currentStatementData) return alert("Generate statement first");
     document.body.className = "print-mode-statement";
-    const { items, totInc, totExp, start, end, filter } = window.currentStatementData;
+    
+    // Destructuring totalCOGS
+    const { items, totInc, totExp, totalCOGS, start, end, filter } = window.currentStatementData;
     const s = (await getDoc(doc(db,"settings","config_"+currentUser.uid))).data()||{name:"Medical Store", address: "", phone: ""};
     
     let rows = '', run=0, sn=0;
@@ -604,14 +627,20 @@ window.printStatement = async () => {
         if(x.type==='Income') run+=x.amount; else run-=x.amount;
         rows += `<tr><td style="text-align:center">${sn}</td><td style="text-align:center">${formatDate(x.date)}</td><td>${x.desc}</td><td style="text-align:center">${x.type}</td><td class="amount">${x.amount.toFixed(2)}</td><td class="amount">${run.toFixed(2)}</td></tr>`;
     });
-    
-    // REMOVED Net Profit from Footer
+
+    // Calculation logic -> Net Profit = (TotalSales - CostOfGoods) - Expenses
+    const netProfit = (totInc - totalCOGS) - totExp;
+
     const printHTML = `
         <div class="stmt-print-layout">
             <div class="stmt-header"><h1>${s.name}</h1><p>${s.address||''}</p><p>Phone: ${s.phone||''}</p></div>
             <div class="stmt-title"><h3>Financial Statement (${filter.toUpperCase()})</h3><p style="text-align:center; font-size:14px; margin-top:5px">From: ${formatDate(new Date(start))} To: ${formatDate(new Date(end))}</p></div>
             <table class="stmt-table"><thead><tr><th width="5%">S.N.</th><th width="12%">Date</th><th>Description</th><th width="10%">Type</th><th width="15%">Amount</th><th width="15%">Balance</th></tr></thead><tbody>${rows}</tbody></table>
-            <div class="stmt-footer-summary"><span>Total Income: ${totInc.toFixed(2)}</span><span>Total Expense: ${totExp.toFixed(2)}</span></div>
+            <div class="stmt-footer-summary">
+                <span>Total Income: ${totInc.toFixed(2)}</span>
+                <span>Total Expense: ${totExp.toFixed(2)}</span>
+                <span>Net Profit: ${netProfit.toFixed(2)}</span>
+            </div>
         </div>`;
     document.getElementById('printable-statement-container').innerHTML = printHTML;
     window.print();
@@ -619,7 +648,7 @@ window.printStatement = async () => {
 
 async function loadSettings() { 
     if(!currentUser) return;
-    const d=(await getDoc(doc(db,"settings","config_"+currentUser.uid))).data(); 
+    const d=(await getDoc(doc(db,"settings","config_"+currentUser.uid))).data();
     const appName = d && d.name ? d.name : "Medical Store";
     document.getElementById('org-brand-sidebar').innerText = appName;
     document.getElementById('org-brand-mobile').innerText = appName;
@@ -633,15 +662,14 @@ document.getElementById('org-settings-form').addEventListener('submit',async(e)=
         alert("Saved & Updated!"); loadSettings();
     }
 });
-
 window.backupData = async () => { 
     if(!currentUser) return;
     const i=[],e=[],n=[]; 
-    (await getDocs(query(collection(db,"invoices"), where("userId", "==", currentUser.uid)))).forEach(d=>i.push(d.data())); 
+    (await getDocs(query(collection(db,"invoices"), where("userId", "==", currentUser.uid)))).forEach(d=>i.push(d.data()));
     (await getDocs(query(collection(db,"expenses"), where("userId", "==", currentUser.uid)))).forEach(d=>e.push(d.data()));
     (await getDocs(query(collection(db,"inventory"), where("userId", "==", currentUser.uid)))).forEach(d=>n.push(d.data())); 
     const s = (await getDoc(doc(db,"settings","config_"+currentUser.uid))).data() || {};
-    const b=new Blob([JSON.stringify({invoices:i,expenses:e,inventory:n,settings:s})],{type:"application/json"}); 
+    const b=new Blob([JSON.stringify({invoices:i,expenses:e,inventory:n,settings:s})],{type:"application/json"});
     const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download="backup_"+formatDate(new Date())+".json"; a.click(); 
 };
 
@@ -652,26 +680,30 @@ window.importData = () => {
     if (!confirm("WARNING: This will DELETE ALL CURRENT DATA and replace it with the backup. Continue?")) return;
     toggleLoader(true);
     const reader = new FileReader();
-    const safeDate = (d) => { if (!d) return null; if (d.seconds) return new Date(d.seconds * 1000); return new Date(d); };
-
+    const safeDate = (d) => { if (!d) return null;
+    if (d.seconds) return new Date(d.seconds * 1000); return new Date(d); };
     reader.onload = async (e) => {
         try {
             const data = JSON.parse(e.target.result);
             const inv = await getDocs(query(collection(db, "invoices"), where("userId", "==", currentUser.uid))); inv.forEach(d => deleteDoc(d.ref));
-            const exp = await getDocs(query(collection(db, "expenses"), where("userId", "==", currentUser.uid))); exp.forEach(d => deleteDoc(d.ref)); 
-            const items = await getDocs(query(collection(db, "inventory"), where("userId", "==", currentUser.uid))); items.forEach(d => deleteDoc(d.ref)); 
-            
-            if (data.invoices) { for (const item of data.invoices) { const d = { ...item, userId: currentUser.uid }; delete d.id; if(item.createdAt) d.createdAt = safeDate(item.createdAt); if(item.finalizedAt) d.finalizedAt = safeDate(item.finalizedAt); await addDoc(collection(db, "invoices"), d); } }
-            if (data.expenses) { for (const item of data.expenses) { const d = { ...item, userId: currentUser.uid }; delete d.id; if(item.date) d.date = safeDate(item.date); await addDoc(collection(db, "expenses"), d); } }
-            if (data.inventory) { for (const item of data.inventory) { const d = { ...item, userId: currentUser.uid }; delete d.id; await addDoc(collection(db, "inventory"), d); } }
-            if (data.settings) { await setDoc(doc(db,"settings","config_"+currentUser.uid), data.settings); }
+            const exp = await getDocs(query(collection(db, "expenses"), where("userId", "==", currentUser.uid))); exp.forEach(d => deleteDoc(d.ref));
+            const items = await getDocs(query(collection(db, "inventory"), where("userId", "==", currentUser.uid))); items.forEach(d => deleteDoc(d.ref));
+            if (data.invoices) { for (const item of data.invoices) { const d = { ...item, userId: currentUser.uid }; delete d.id;
+            if(item.createdAt) d.createdAt = safeDate(item.createdAt); if(item.finalizedAt) d.finalizedAt = safeDate(item.finalizedAt); await addDoc(collection(db, "invoices"), d);
+            } }
+            if (data.expenses) { for (const item of data.expenses) { const d = { ...item, userId: currentUser.uid };
+            delete d.id; if(item.date) d.date = safeDate(item.date); await addDoc(collection(db, "expenses"), d);
+            } }
+            if (data.inventory) { for (const item of data.inventory) { const d = { ...item, userId: currentUser.uid };
+            delete d.id; await addDoc(collection(db, "inventory"), d); } }
+            if (data.settings) { await setDoc(doc(db,"settings","config_"+currentUser.uid), data.settings);
+            }
 
             alert("Full Restore Complete!"); location.reload();
         } catch (err) { alert("Error: " + err.message); } finally { toggleLoader(false); }
     };
     reader.readAsText(file);
 };
-
 window.requestAuth = (t,id) => { document.getElementById('auth-action-type').value=t; document.getElementById('auth-action-id').value=id||''; new bootstrap.Modal(document.getElementById('authModal')).show(); };
 window.performAuthAction = async () => { 
     try { 
@@ -682,25 +714,28 @@ window.performAuthAction = async () => {
         bootstrap.Modal.getInstance(document.getElementById('authModal')).hide(); 
         
         if(t==='settings'){document.getElementById('settings-lock').classList.add('d-none');document.getElementById('settings-content').classList.remove('d-none');}
-        if(t==='delete_invoice') { await deleteDoc(doc(db, "invoices", id)); loadSavedInvoices(); triggerDashboardLoad(); alert("Deleted"); }
-        if(t==='delete_expense') { await deleteDoc(doc(db, "expenses", id)); loadExpenses(); triggerDashboardLoad(); alert("Deleted"); }
-        if(t==='delete_inventory') { await deleteDoc(doc(db, "inventory", id)); loadInventory(); alert("Deleted"); }
+        if(t==='delete_invoice') { await deleteDoc(doc(db, "invoices", id));
+        loadSavedInvoices(); triggerDashboardLoad(); alert("Deleted"); }
+        if(t==='delete_expense') { await deleteDoc(doc(db, "expenses", id)); loadExpenses(); triggerDashboardLoad(); alert("Deleted");
+        }
+        if(t==='delete_inventory') { await deleteDoc(doc(db, "inventory", id)); loadInventory(); alert("Deleted");
+        }
         if(t==='reset') { 
-            toggleLoader(true); 
+            toggleLoader(true);
             const inv = await getDocs(query(collection(db, "invoices"), where("userId", "==", currentUser.uid))); inv.forEach(d => deleteDoc(d.ref));
-            const exp = await getDocs(query(collection(db, "expenses"), where("userId", "==", currentUser.uid))); exp.forEach(d => deleteDoc(d.ref)); 
+            const exp = await getDocs(query(collection(db, "expenses"), where("userId", "==", currentUser.uid))); exp.forEach(d => deleteDoc(d.ref));
             const items = await getDocs(query(collection(db, "inventory"), where("userId", "==", currentUser.uid))); items.forEach(d => deleteDoc(d.ref)); 
             await deleteDoc(doc(db, "settings", "config_"+currentUser.uid));
-            alert("Reset Complete"); location.reload(); 
+            alert("Reset Complete"); location.reload();
         }
     } catch(e){ alert("Wrong Password: " + e.message); } 
 };
 
-window.filterInventory = () => { const t=document.getElementById('inventory-search').value.toLowerCase(); document.querySelectorAll('#inventory-table-body tr').forEach(r=>r.style.display=r.innerText.toLowerCase().includes(t)?'':'none'); };
+window.filterInventory = () => { const t=document.getElementById('inventory-search').value.toLowerCase();
+document.querySelectorAll('#inventory-table-body tr').forEach(r=>r.style.display=r.innerText.toLowerCase().includes(t)?'':'none'); };
 window.filterSavedInvoices = () => { const t=document.getElementById('search-invoice').value.toLowerCase(); document.querySelectorAll('.inv-row').forEach(r=>r.style.display=r.innerText.toLowerCase().includes(t)?'':'none'); };
 function toggleLoader(s){document.getElementById('loader').style.display=s?'flex':'none';}
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-
