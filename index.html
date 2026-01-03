@@ -46,14 +46,17 @@
         /* Print Styles */
         #printable-container, #printable-statement-container { display: none; }
         
-        /* Statement Print */
-        .stmt-print-layout { background: white; color: #000; font-family: 'Times New Roman', Times, serif; padding: 40px; max-width: 900px; margin: 0 auto; }
-        .stmt-header { text-align: center; margin-bottom: 30px; }
-        .stmt-header h1 { font-size: 26px; font-weight: bold; margin: 0; text-transform: uppercase; }
-        .stmt-title { text-align: center; margin: 20px 0; border-top: 2px solid #000; padding-top: 10px; }
-        .stmt-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 20px; }
-        .stmt-table th, .stmt-table td { border: 1px solid #ccc; padding: 8px; }
+        /* Statement Print CSS - UPDATED FOR STANDARD SIZING */
+        .stmt-print-layout { background: white; color: #000; font-family: 'Times New Roman', Times, serif; padding: 30px; max-width: 900px; margin: 0 auto; }
+        .stmt-header { text-align: center; margin-bottom: 20px; }
+        .stmt-header h1 { font-size: 24px; font-weight: bold; margin: 0; text-transform: uppercase; }
+        .stmt-title { text-align: center; margin: 15px 0; border-top: 2px solid #000; padding-top: 10px; }
+        
+        /* Table updates for compact standard look */
+        .stmt-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 15px; }
+        .stmt-table th, .stmt-table td { border: 1px solid #ccc; padding: 5px 8px; vertical-align: middle; }
         .stmt-table th { background-color: #f2f2f2; font-weight: bold; text-align: center; }
+        
         .stmt-footer-summary { margin-top: 30px; display: flex; justify-content: center; gap: 30px; font-weight: bold; font-size: 14px; }
 
         /* Invoice Print */
